@@ -39,12 +39,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       <div className="w-full border-t border-gray-200 p-4 px-6 flex items-center justify-between">
         <div className="flex gap-2 items-center">
           <UserButton />
-          <div className="flex flex-col">
-            <h1 className="text-sm font-medium truncate max-w-[6rem] md:max-w-[5rem]">
+          <div className="flex flex-col cursor-pointer transition-all duration-200">
+            <h1 className="text-base sm:text-sm font-semibold text-gray-800">
               {user.full_name}
             </h1>
             {user.username && (
-              <p className="text-sm text-gray-500 truncate max-w-[6rem] md:max-w-[5rem]">
+              <p className="text-sm sm:text-xs text-gray-500">
                 @{user.username}
               </p>
             )}

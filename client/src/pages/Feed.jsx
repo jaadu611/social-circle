@@ -19,9 +19,9 @@ const Feed = () => {
   }, []);
 
   return !loading ? (
-    <div className="h-full overflow-y-scroll no-scrollbar p-4 flex justify-center xl:justify-between gap-6 xl:gap-8 max-w-7xl mx-auto">
+    <div className="h-full overflow-y-scroll no-scrollbar p-4 flex justify-center xl:justify-between gap-4 max-w-7xl mx-auto">
       {/* Main content area */}
-      <div className="flex-1 w-full xl:max-w-[600px]">
+      <div className="flex-1 w-full xl:max-w-[800px]">
         <StoriesBar />
         <div className="space-y-6">
           {feeds.map((post) => (
@@ -31,7 +31,7 @@ const Feed = () => {
       </div>
 
       {/* Right sidebar */}
-      <div className="hidden xl:block w-[280px] sticky top-10">
+      <div className="hidden xl:block w-[400px] sticky top-0">
         <RecentMessages />
       </div>
     </div>

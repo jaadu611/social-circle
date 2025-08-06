@@ -21,7 +21,7 @@ const StoriesBar = ({ stories = dummyStoriesData }) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
           onClick={() => setShowModel(true)}
-          className="shrink-0 w-[90px] sm:w-[100px] md:w-[110px] aspect-[3/4] rounded-lg border-2 border-dashed border-indigo-300 bg-gradient-to-b from-indigo-50 to-white flex flex-col items-center justify-center text-center cursor-pointer hover:shadow transition"
+          className="shrink-0 w-[90px] sm:w-[100px] md:w-[110px] aspect-[3/4] rounded-lg border-2 border-dashed border-indigo-300 bg-gradient-to-b from-indigo-50 to-white flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-lg hover:scale-105 transition-transform duration-300 transform-gpu will-change-transform"
         >
           <div className="size-10 bg-indigo-500 rounded-full flex items-center justify-center mb-2">
             <Plus className="w-5 h-5 text-white" />
@@ -41,7 +41,7 @@ const StoriesBar = ({ stories = dummyStoriesData }) => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             onClick={() => setViewStory(story)}
-            className="relative shrink-0 w-[90px] sm:w-[100px] md:w-[110px] aspect-[3/4] rounded-lg overflow-hidden cursor-pointer group"
+            className="relative shrink-0 w-[90px] sm:w-[100px] md:w-[110px] aspect-[3/4] rounded-lg overflow-hidden cursor-pointer group will-change-transform transform-gpu"
           >
             {/* Media Background */}
             {story.media_type !== "text" && story.media_url && (
