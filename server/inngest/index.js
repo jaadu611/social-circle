@@ -1,5 +1,5 @@
 import { Inngest } from "inngest";
-import User from "server/models/user.model";
+import User from "../models/user.model.js";
 
 export const inngest = new Inngest({ id: "social-circle" });
 
