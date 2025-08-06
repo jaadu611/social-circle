@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 400" width="1400" height="400">
+  <defs>
+    <linearGradient id="indigoPurpleGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#9333EA" />
+    </linearGradient>
+  </defs>
+
+  <rect width="100%" height="100%" fill="none" />
+
+  <g transform="translate(-120, -60) scale(0.6)">
+    <path fill="url(#indigoPurpleGradient)" d="m424 399 2 1c29 7 54 24 70 50 8 14 13 29 18 44a128 128 0 0 0 24 45c15 17 37 30 60 34a87 87 0 0 0 7 0h6a5043 5043 0 0 0 36 1h56a5140 5140 0 0 0 0-57c0-19-7-35-20-48a75 75 0 0 0-57-20c-18 0-34 10-46 22-11 12-16 28-21 44l-5 11h-2a89 89 0 0 1-5-8 180 180 0 0 1-21-47v-2c-2-5-2-8 0-13l3-6 2-2c4-8 10-14 16-20l3-3c15-14 35-23 55-27l3-1 24-1h4c34 0 64 13 88 37 26 28 31 65 31 101a12796 12796 0 0 0 1 75v4l-3 10c-3 3-5 3-10 3h-7a7328 7328 0 0 0-103 0c-50 0-95-12-132-48-19-19-30-44-38-69-4-15-10-28-20-39l-2-2a65 65 0 0 0-43-19c-22-1-41 4-57 19a63 63 0 0 0-19 44v2a2233 2233 0 0 0-1 23v37a10224 10224 0 0 0 80 0c15 0 29-1 43-9l2-1 14-9 2 3a249 249 0 0 0 19 27l11 11c-4 11-21 18-31 22-22 9-45 8-68 8h-10a7126 7126 0 0 1-105 1c-4-1-5-2-8-5l-1-6v-10a4650 4650 0 0 1 0-77c0-25 0-25 2-37v-2c7-31 25-57 50-75 30-19 69-25 103-16Z"/>
+    <path fill="url(#indigoPurpleGradient)" d="M394 240h2a65 65 0 0 1 43 16c13 10 21 27 23 43 2 21-4 40-18 56-9 10-19 16-32 20l-4 1c-17 4-36 1-51-8a71 71 0 0 1-31-41c-3-16-2-32 4-47l1-3c9-17 24-28 42-35 7-2 13-2 21-2Z"/>
+    <path fill="url(#indigoPurpleGradient)" d="m657 244 3 2c17 8 29 21 36 38 6 19 5 37-3 55a72 72 0 0 1-43 36c-18 5-36 2-53-6-16-9-27-24-32-42s-3-37 6-53c10-16 24-28 42-33 14-3 31-3 44 3Z"/>
+  </g>
+
+  <text
+    x="380"
+    y="270"
+    font-family="Segoe UI"
+    fill="url(#indigoPurpleGradient)"
+    font-weight="bold"
+    font-size="180"
+    letter-spacing="3"
+    alignment-baseline="middle"
+    dominant-baseline="middle"
+    text-anchor="start"
+  >
+    Socal-Circle
+  </text>
+</svg>

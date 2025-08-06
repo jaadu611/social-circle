@@ -1,0 +1,50 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+@import "tailwindcss";
+
+* {
+  font-family: "Outfit";
+  user-select: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* connections and media tabs*/
+@media (min-width: 440px) {
+  .custom-cols-connections {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 640px) {
+  .custom-cols-connections {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+@media (min-width: 760px) {
+  .custom-cols-connections {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1030px) {
+  .custom-cols-connections {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* messages */
+@media (min-width: 330px) {
+  .custom-cols-messages {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 760px) {
+  .custom-cols-messages {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1030px) {
+  .custom-cols-messages {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
