@@ -1,4 +1,3 @@
-import e from "express";
 import ImageKit from "imagekit";
 
 var imagekit = new ImageKit({
