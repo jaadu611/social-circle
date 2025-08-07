@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 
 import Login from "./pages/Login";
 import Feed from "./pages/Feed";
@@ -15,10 +15,30 @@ import { Toaster } from "react-hot-toast";
 import Loading from "./components/Loading";
 
 const App = () => {
+  const { getToken } = useAuth();
   const { isLoaded, user } = useUser();
 
-  if(!isLoaded) {
-    return <Loading />
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user) {
+        const token = await getToken();
+
+        const res = await fetch("http://localhost:3000/api/user/data", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+        console.log("Backend Response:", data); // 🔍 Debug backend response
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
+
+  if (!isLoaded) {
+    return <Loading />;
   }
 
   return (
