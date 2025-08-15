@@ -35,10 +35,10 @@
 /* messages */
 @media (min-width: 330px) {
   .custom-cols-messages {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(1, 1fr);
   }
 }
-@media (min-width: 760px) {
+@media (min-width: 370px) {
   .custom-cols-messages {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -47,4 +47,22 @@
   .custom-cols-messages {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+@media (min-width: 411px) {
+  .bp-411\\:flex-row { flex-direction: row; }
+  .bp-411\\:justify-between { justify-content: space-between; }
+  .bp-411\\:items-start { align-items: flex-start; }
+  .bp-411\\:mt-0 { margin-top: 0; }
+  .bp-411\\:items-end { align-items: flex-end; }
+  .bp-411\\:w-auto { width: auto; }
+  .bp-411\\:max-w-none { max-width: none; }
+}
+
+@media (min-width: 1024px) {
+  .lg\\:flex-row { flex-direction: row; }
+  .lg\\:justify-between { justify-content: space-between; }
+  .lg\\:items-start { align-items: flex-start; }
+  .lg\\:mt-0 { margin-top: 0; }
+  .lg\\:items-end { align-items: flex-end; }
 }

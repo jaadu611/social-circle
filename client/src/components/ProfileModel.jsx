@@ -1,9 +1,16 @@
-import React, { useState } from "react";
-import { dummyUserData } from "../assets/assets";
+import React, { use, useState } from "react";
 import { Pencil } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { updateUser } from "../features/userSlice";
+import { useAuth } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
 
 const ProfileModel = ({ setShowEdit }) => {
-  const user = dummyUserData;
+  const dispatch = useDispatch();
+  const { getToken } = useAuth();
+
+  const user = useSelector((state) => state.user.value);
+
   const [editForm, setEditForm] = useState({
     username: user.username,
     bio: user.bio,
@@ -13,12 +20,38 @@ const ProfileModel = ({ setShowEdit }) => {
     full_name: user.full_name,
   });
 
-  const handleSaveProfile = async () => {};
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    try {
+      const userData = new FormData();
+      const {
+        username,
+        full_name,
+        bio,
+        location,
+        profile_picture,
+        cover_photo,
+      } = editForm;
+
+      userData.append("username", username);
+      userData.append("full_name", full_name);
+      userData.append("bio", bio);
+      userData.append("location", location);
+
+      if (profile_picture) userData.append("profile_picture", profile_picture);
+      if (cover_photo) userData.append("cover_photo", cover_photo);
+
+      const token = await getToken();
+      dispatch(updateUser({ userData, token }));
+      setShowEdit(false);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[110] overflow-y-auto bg-black/50 px-4 py-8">
       <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-xl p-6 relative transform-gpu transition-all duration-300 ease-in-out">
-        {/* Cover Photo */}
         <div className="relative w-full h-48 overflow-hidden rounded-lg group">
           <input
             type="file"
@@ -26,26 +59,39 @@ const ProfileModel = ({ setShowEdit }) => {
             id="cover_photo"
             hidden
             onChange={(e) => {
-              setEditForm({ ...editForm, cover_photo: e.target.files[0] });
+              setEditForm({
+                ...editForm,
+                cover_photo: e.target.files[0],
+              });
             }}
           />
-          <label htmlFor="cover_photo">
-            <img
-              src={
-                editForm.cover_photo
-                  ? URL.createObjectURL(editForm.cover_photo)
-                  : user.cover_photo
-              }
-              alt="Cover"
-              className="w-full h-48 object-cover rounded-lg"
-            />
-            <div className="absolute inset-0 hidden cursor-pointer group-hover:flex items-center justify-center bg-black/20">
+
+          <label
+            htmlFor="cover_photo"
+            className="relative w-full h-full cursor-pointer"
+          >
+            {!user.cover_photo && !editForm.cover_photo && (
+              <div className="w-full h-full bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200" />
+            )}
+
+            {(user.cover_photo || editForm.cover_photo) && (
+              <img
+                src={
+                  editForm.cover_photo
+                    ? URL.createObjectURL(editForm.cover_photo)
+                    : user.cover_photo
+                }
+                alt="Cover"
+                className="w-full h-full object-cover"
+              />
+            )}
+
+            <div className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-black/20">
               <Pencil className="w-5 h-5 text-white" />
             </div>
           </label>
         </div>
 
-        {/* Profile Picture */}
         <div className="-mt-12 mb-4 w-full flex justify-center">
           <div className="relative group">
             <input
@@ -81,9 +127,17 @@ const ProfileModel = ({ setShowEdit }) => {
           Edit Profile
         </h1>
 
-        <form className="space-y-4" onSubmit={handleSaveProfile}>
+        <form
+          className="space-y-4"
+          onSubmit={(e) =>
+            toast.promise(handleSaveProfile(e), {
+              loading: "Saving...",
+              success: "Profile updated!",
+              error: "Failed to update profile.",
+            })
+          }
+        >
           <div className="space-y-5">
-            {/* Full Name */}
             <div>
               <label className="block text-sm font-medium text-gray-800 mb-2">
                 Full Name
@@ -99,7 +153,6 @@ const ProfileModel = ({ setShowEdit }) => {
               />
             </div>
 
-            {/* Username */}
             <div>
               <label className="block text-sm font-medium text-gray-800 mb-2">
                 Username
@@ -115,7 +168,6 @@ const ProfileModel = ({ setShowEdit }) => {
               />
             </div>
 
-            {/* Bio */}
             <div>
               <label className="flex items-center justify-between text-sm font-medium text-gray-800 mb-2">
                 Bio
@@ -136,7 +188,6 @@ const ProfileModel = ({ setShowEdit }) => {
               />
             </div>
 
-            {/* Location */}
             <div>
               <label className="block text-sm font-medium text-gray-800 mb-2">
                 Location

@@ -1,85 +1,216 @@
-import { Calendar, MapPin, PenBox } from "lucide-react";
+import React, { useState } from "react";
+import {
+  Calendar,
+  MapPin,
+  MessageCircle,
+  PenBox,
+  UserPlus,
+  UserX,
+} from "lucide-react";
 import moment from "moment";
-import React from "react";
+import { useAuth } from "@clerk/clerk-react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchConnections } from "../features/connectionSlice";
+import api from "../api/axios";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
-  return (
-    <div className="relative py-4 px-6 md:px-8 bg-white">
-      {/* profile image */}
-      <div className="flex flex-col md:flex-row items-start gap-6">
-        <div className="w-32 h-32 border-4 border-white shadow-lg absolute -top-16 rounded-full">
-          <img
-            src={user.profile_picture}
-            alt=""
-            className="absolute rounded-full z-2"
-          />
-        </div>
-      </div>
+  const { getToken } = useAuth();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const currentUser = useSelector((state) => state.user.value);
 
-      <div className="w-full pt-16 md:pt-0 md:pl-36">
-        <div className="flex flex-col md:flex-row items-start justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">
+  const isOwnProfile = !profileId || currentUser._id === profileId;
+  const [isFollowing, setIsFollowing] = useState(
+    currentUser?.following?.includes(user._id) || false
+  );
+
+  const handleFollow = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/user/follow",
+        { id: user._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        setIsFollowing(true);
+        dispatch(fetchConnections(token));
+      } else toast.error(data.message);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/user/unfollow",
+        { id: user._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        setIsFollowing(false);
+        dispatch(fetchConnections(token));
+      } else toast.error(data.message);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleConnectionRequest = async () => {
+    if (currentUser.connections?.includes(user._id)) {
+      navigate(`/messages/${user._id}`);
+      return;
+    }
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/user/connection",
+        { id: user._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        dispatch(fetchConnections(token));
+      } else toast.error(data.message);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  return (
+    <div className="rounded-xl shadow-lg">
+      <div className="relative max-w-5xl mx-auto p-6 sm:p-8 md:p-10">
+        {/* Edit button */}
+        {isOwnProfile && (
+          <button
+            onClick={() => setShowEdit(true)}
+            className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm z-10"
+          >
+            <PenBox className="w-4 h-4" />
+            <span>Edit</span>
+          </button>
+        )}
+
+        <div className="flex flex-col bp-411:flex-row items-center bp-411:items-start gap-6">
+          {/* Avatar */}
+          <div className="flex-shrink-0 w-32 h-32 rounded-full overflow-hidden border-4 border-white -mt-24 md:-mt-26 relative z-10">
+            <img
+              src={user.profile_picture}
+              alt={user.full_name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Info + Buttons */}
+          <div className="flex-1 w-full flex flex-col bp-411:flex-row bp-411:justify-between gap-4 bp-411:gap-6 mt-4 bp-411:mt-0 z-0">
+            {/* User Info */}
+            <div className="flex-1 min-w-0 text-center bp-411:text-left">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
                 {user.full_name}
               </h1>
+              <p className="text-gray-500 text-sm sm:text-base truncate">
+                {user.username ? `@${user.username}` : "Add a username"}
+              </p>
+
+              {user.bio && (
+                <p className="mt-2 text-gray-700 text-sm sm:text-base">
+                  {user.bio}
+                </p>
+              )}
+
+              {/* Stats */}
+              <div className="flex mt-4 text-gray-700 justify-center bp-411:justify-start">
+                <div className="min-w-[80px] text-center">
+                  <span className="font-bold text-lg sm:text-xl">
+                    {posts.length}
+                  </span>
+                  <div className="text-sm sm:text-base text-gray-500">
+                    Posts
+                  </div>
+                </div>
+                <div className="min-w-[80px] text-center">
+                  <span className="font-bold text-lg sm:text-xl">
+                    {user.followers.length}
+                  </span>
+                  <div className="text-sm sm:text-base text-gray-500">
+                    Followers
+                  </div>
+                </div>
+                <div className="min-w-[80px] text-center">
+                  <span className="font-bold text-lg sm:text-xl">
+                    {user.following.length}
+                  </span>
+                  <div className="text-sm sm:text-base text-gray-500">
+                    Following
+                  </div>
+                </div>
+              </div>
+
+              {/* Location & Joined */}
+              <div className="flex flex-wrap gap-4 mt-4 text-gray-500 text-sm justify-center bp-411:justify-start">
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  {user.location || "Add Location"}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  Joined {moment(user.createdAt).fromNow()}
+                </span>
+              </div>
             </div>
-            <p className="text-gray-600">
-              {user.username ? `@${user.username}` : "Add a user name"}
-            </p>
-          </div>
 
-          {!profileId && (
-            <button
-              onClick={() => setShowEdit(true)}
-              className="flex items-center cursor-pointer gap-2 border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-lg font-medium transition-colors mt-4 md:mt-0"
-            >
-              <PenBox className="w-4 h-4" />
-              Edit
-            </button>
-          )}
-        </div>
-        <p className="text-gray-700 text-sm max-w-md mt-4">{user.bio}</p>
+            {/* Buttons */}
+            {!isOwnProfile && (
+              <div className="flex flex-col items-center md:flex-row bp-411:items-end gap-3 mt-4 bp-411:mt-0">
+                <button
+                  onClick={!isFollowing ? handleFollow : handleUnfollow}
+                  className={`flex items-center justify-center gap-2 w-full bp-411:w-44 px-4 py-2 rounded-md font-medium text-white transition text-xs sm:text-sm ${
+                    isFollowing
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+                  }`}
+                >
+                  {isFollowing ? (
+                    <>
+                      <UserX className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                      <span className="leading-none">Unfollow</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                      <span className="leading-none">Follow</span>
+                    </>
+                  )}
+                </button>
 
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 mt-4">
-          <span className="flex items-center gap-1.5">
-            <MapPin className="w-4 h-4" />
-            {user.location ? user.location : "Add Location"}
-          </span>
-
-          <span className="flex items-center gap-1.5">
-            <Calendar className="w-4 h-4" />
-            Joined:{" "}
-            <span className="font-medium">
-              {moment(user.createdAt).fromNow()}
-            </span>
-          </span>
-        </div>
-
-        <div className="flex items-center gap-6 mt-6 border-t border-gray-200 pt-4">
-          <div>
-            <span className="sm:text-xl font-bold text-gray-900">
-              {posts.length}
-            </span>
-            <span className="text-xs sm:text-sm text-gray-500 ml-1.5">
-              Posts
-            </span>
-          </div>
-          <div>
-            <span className="sm:text-xl font-bold text-gray-900">
-              {user.followers.length}
-            </span>
-            <span className="text-xs sm:text-sm text-gray-500 ml-1.5">
-              Followers
-            </span>
-          </div>
-          <div>
-            <span className="sm:text-xl font-bold text-gray-900">
-              {user.following.length}
-            </span>
-            <span className="text-xs sm:text-sm text-gray-500 ml-1.5">
-              Following
-            </span>
+                <button
+                  onClick={handleConnectionRequest}
+                  className={`flex items-center justify-center gap-2 w-full bp-411:w-44 px-4 py-2 rounded-md font-medium border transition text-xs sm:text-sm ${
+                    currentUser.connections?.includes(user._id)
+                      ? "border-green-400 text-green-600 hover:border-green-500 hover:text-green-700"
+                      : "border-slate-300 text-slate-600 hover:border-indigo-500 hover:text-indigo-600"
+                  }`}
+                >
+                  {currentUser.connections?.includes(user._id) ? (
+                    <>
+                      <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                      <span className="leading-none">Message</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                      <span className="leading-none">Add Connection</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,8 +1,10 @@
 import { X } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const StoryViewer = ({ viewStory, setViewStory }) => {
   const [progress, setProgress] = useState(0);
+  const [isLightBg, setIsLightBg] = useState(false);
 
   useEffect(() => {
     let timer, progressInterval;
@@ -27,6 +29,16 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
     };
   }, [viewStory, setViewStory]);
 
+  useEffect(() => {
+    if (!viewStory?.background_color) return;
+    const hex = viewStory.background_color.replace("#", "");
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    setIsLightBg(brightness > 155);
+  }, [viewStory]);
+
   if (!viewStory) return null;
 
   const renderContent = () => {
@@ -35,7 +47,8 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
         return (
           <img
             src={viewStory.media_url}
-            className="max-h-screen max-w-full object-contain"
+            className="w-full h-full object-contain rounded-2xl shadow-2xl"
+            alt=""
           />
         );
 
@@ -44,14 +57,18 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
           <video
             onEnded={() => setViewStory(null)}
             src={viewStory.media_url}
-            className="max-h-screen"
+            className="w-full h-full rounded-2xl shadow-2xl"
             autoPlay
+            playsInline
           />
         );
 
       case "text":
         return (
-          <div className="w-full h-full flex items-center justify-center p-8 text-white text-2xl text-center">
+          <div
+            className="w-full h-full flex items-center justify-center p-8 text-3xl sm:text-4xl font-semibold text-center leading-relaxed tracking-wide"
+            style={{ color: isLightBg ? "#1f2937" : "#f8fafc" }}
+          >
             {viewStory.content}
           </div>
         );
@@ -63,44 +80,43 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
 
   return (
     <div
-      className="fixed inset-0 h-screen bg-black/90 z-110 flex items-center justify-center"
-      style={{
-        backgroundColor:
-          viewStory.media_type === "text"
-            ? viewStory.background_color
-            : "#000000",
-      }}
+      className="fixed inset-0 h-screen z-[110] flex items-center justify-center overflow-hidden"
+      style={{ backgroundColor: viewStory.background_color }}
     >
-      {/* progress bar */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gray-700">
-        <div
-          className="h-full bg-white transition-all duration-100 linear"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      {/* user info */}
-      <div className="absolute top-4 left-4 flex items-center space-x-2 p-2 px-4 sm:p-4 sm:px-8 backdrop-blur-2xl rounded bg-black/50">
-        <img
-          src={viewStory.user?.profile_picture}
-          alt=""
-          className="size-7 sm:size-8 rounded-full object-cover border border-white"
-        />
-        <div className="text-white font-medium flex items-center gap-1.5">
-          <span>{viewStory.user?.full_name}</span>
+      {viewStory.media_type !== "video" && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-black/30">
+          <div
+            className="h-full bg-white/90 transition-all duration-100 linear"
+            style={{ width: `${progress}%` }}
+          />
         </div>
-      </div>
+      )}
 
-      {/* close button */}
+      <Link to={`/profile/${viewStory.user._id}`}>
+        <div className="absolute z-30 top-4 left-4 flex items-center gap-3 p-2.5 pr-4 rounded-full backdrop-blur-md bg-black/50 shadow-lg border border-white/20 cursor-pointer transform transition-all duration-200 hover:scale-105 hover:bg-black/70 hover:shadow-xl">
+          <img
+            src={viewStory.user?.profile_picture}
+            alt={viewStory.user?.full_name || "User"}
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white/70 shadow-md"
+          />
+          <span className="text-white font-semibold text-sm sm:text-base tracking-wide truncate max-w-[140px] sm:max-w-[200px]">
+            {viewStory.user?.full_name}
+          </span>
+        </div>
+      </Link>
+
       <button
         onClick={() => setViewStory(null)}
-        className="absolute top-4 right-4 text-white text-3xl font-bold focus:outline-none"
+        className="absolute top-4 z-30 right-4 text-3xl font-bold focus:outline-none bg-white/20 hover:bg-white/30 rounded-full p-1.5 transition"
       >
-        <X className="h-8 w-8 hover:scale-110 transition cursor-pointer" />
+        <X
+          className={`h-7 w-7 sm:h-8 sm:w-8 hover:scale-110 transition cursor-pointer ${
+            isLightBg ? "text-black" : "text-white"
+          }`}
+        />
       </button>
 
-      {/* content wrapper */}
-      <div className="flex max-w-[90vw] max-h-[90vh] items-center justify-center">
+      <div className="flex items-center justify-center w-full h-full px-0">
         {renderContent()}
       </div>
     </div>

@@ -1,4 +1,7 @@
 import imagekit from "../configs/imagekit.js";
+import { inngest } from "../inngest/index.js";
+import Connection from "../models/connection.model.js";
+import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
 import fs from "fs";
 
@@ -20,9 +23,9 @@ export const getUserData = async (req, res) => {
 export const updateUserData = async (req, res) => {
   try {
     const { userId } = req.auth();
-    let { username, bio, location, full_name } = req.body;
-    const tempUser = await User.findById(userId);
+    const { username, bio, location, full_name } = req.body;
 
+    const tempUser = await User.findById(userId);
     if (!tempUser) {
       return res
         .status(404)
@@ -39,62 +42,37 @@ export const updateUserData = async (req, res) => {
       }
     }
 
-    const updatedUser = await User.findByIdAndUpdate(userId, {
-      username,
-      bio,
-      location,
-      full_name,
-    });
+    let updateData = { username, bio, location, full_name };
 
-    const profile = req.files?.profile?.[0];
-    const cover = req.files?.cover?.[0];
-
-    if (profile) {
-      const buffer = fs.readFileSync(profile.path);
+    if (req.files?.profile_picture?.[0]) {
+      const profile = req.files.profile_picture[0];
       const response = await imagekit.upload({
-        file: buffer,
+        file: profile.buffer,
         fileName: profile.originalname,
       });
-
-      const url = imagekit.url({
-        path: response.path,
-        transformation: [
-          { quality: "auto" },
-          { format: "webp" },
-          { width: "512" },
-        ],
-      });
-
-      updateUserData.profile_picture = url;
+      updateData.profile_picture = response.url;
     }
 
-    if (cover) {
-      const buffer = fs.readFileSync(cover.path);
+    if (req.files?.cover_photo?.[0]) {
+      const cover = req.files.cover_photo[0];
       const response = await imagekit.upload({
-        file: buffer,
+        file: cover.buffer,
         fileName: cover.originalname,
       });
-
-      const url = imagekit.url({
-        path: response.path,
-        transformation: [
-          { quality: "auto" },
-          { format: "webp" },
-          { width: "1280" },
-        ],
-      });
-
-      updateUserData.cover_photo = url;
+      updateData.cover_photo = response.url;
     }
 
-    const user = await User.findByIdAndUpdate(userId, updatedUser, {
+    const user = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
     });
 
-    res
-      .status(200)
-      .json({ success: true, user, message: "User data updated successfully" });
+    res.status(200).json({
+      success: true,
+      user,
+      message: "User data updated successfully",
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
@@ -130,9 +108,16 @@ export const followUser = async (req, res) => {
     const user = await User.findById(userId);
 
     if (user.following.includes(id)) {
+      user.following.pull(id);
+      await user.save();
+
+      const toUser = await User.findById(id);
+      toUser.followers.pull(userId);
+      await toUser.save();
+
       return res
-        .status(400)
-        .json({ success: false, message: "Already following this user" });
+        .status(200)
+        .json({ success: true, message: "User unfollowed successfully" });
     }
 
     user.following.push(id);
@@ -142,7 +127,7 @@ export const followUser = async (req, res) => {
     toUser.followers.push(userId);
     await toUser.save();
 
-    res
+    return res
       .status(200)
       .json({ success: true, message: "User followed successfully" });
   } catch (error) {
@@ -204,9 +189,14 @@ export const sendConnectionRequest = async (req, res) => {
     });
 
     if (!existingConnection) {
-      await Connection.create({
+      const newConnection = await Connection.create({
         from_user_id: userId,
         to_user_id: id,
+      });
+
+      await inngest.send({
+        name: "app/connection-request",
+        data: { connectionId: newConnection._id },
       });
 
       res.status(200).json({
@@ -214,9 +204,9 @@ export const sendConnectionRequest = async (req, res) => {
         message: "Connection request sent successfully",
       });
     } else if (existingConnection && existingConnection.status === "pending") {
-      res.status(400).json({
-        success: false,
-        message: "Connection request already sent",
+      return res.status(200).json({
+        success: true,
+        message: "Connection request pending",
       });
     } else {
       res.status(400).json({
@@ -232,31 +222,26 @@ export const sendConnectionRequest = async (req, res) => {
 export const getConnections = async (req, res) => {
   try {
     const { userId } = req.auth();
-    const user = await User.findById(userId).populate(
-      "connections followers following"
-    );
 
-    const connections = user.connections;
-    const followers = user.followers;
-    const following = user.following;
+    const user = await User.findById(userId)
+      .populate("connections")
+      .populate("followers")
+      .populate("following");
 
-    const pendingConnections = (
-      await connections
-        .find({
-          to_user_id: userId,
-          status: "pending",
-        })
-        .populate("from_user_id")
-    ).map((connection) => connection.from_user_id);
+    const pendingConnections = await Connection.find({
+      to_user_id: userId,
+      status: "pending",
+    }).populate("from_user_id");
 
     res.status(200).json({
       success: true,
-      connections,
-      followers,
-      following,
-      pendingConnections,
+      connections: user.connections,
+      followers: user.followers,
+      following: user.following,
+      pendingConnections: pendingConnections.map((c) => c.from_user_id),
     });
   } catch (error) {
+    console.error("Error fetching connections:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
@@ -293,6 +278,25 @@ export const acceptConnectionRequest = async (req, res) => {
       success: true,
       message: "Connection request accepted successfully",
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+export const getUserProfile = async (req, res) => {
+  try {
+    const { profileId } = req.body;
+    const profile = await User.findById(profileId).select("-password -__v");
+    if (!profile) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Profile not found" });
+    }
+
+    const posts = await Post.find({ user: profileId })
+      .populate("user")
+      .sort({ createdAt: -1 });
+    res.status(200).json({ success: true, profile, posts });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }

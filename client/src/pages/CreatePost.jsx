@@ -1,21 +1,64 @@
 import React, { useState } from "react";
-import { dummyUserData } from "../assets/assets";
 import { Image, X, Loader } from "lucide-react";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
+import api from "../api/axios.js";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 
 const CreatePost = () => {
   const [content, setContent] = useState("");
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.user.value);
+  const { getToken } = useAuth();
 
-  const user = dummyUserData;
+  const handleSubmit = async () => {
+    if (!images.length && !content) {
+      return toast.error("Please add at least one image or text");
+    }
+    setLoading(true);
 
-  const handleSubmit = async () => {};
+    const post_type =
+      images.length && content
+        ? "text_with_image"
+        : images.length
+        ? "image"
+        : "text";
+
+    const token = await getToken();
+
+    try {
+      let formData = new FormData();
+      formData.append("content", content);
+      formData.append("post_type", post_type);
+
+      images.forEach((image) => {
+        formData.append("images", image);
+      });
+
+      const { data } = await api.post("/api/post/add", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (data.success) {
+        navigate("/");
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to add post");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-slate-100 py-10 px-4">
       <div className="max-w-[100vw] mx-auto bg-white rounded-xl shadow-lg p-6 space-y-5">
-        {/* Header */}
         <div className="flex items-center gap-3">
           <img
             src={user.profile_picture}
@@ -30,7 +73,6 @@ const CreatePost = () => {
           </div>
         </div>
 
-        {/* Textarea + Images */}
         <div className="space-y-3">
           <div className="relative">
             <div className="absolute top-2 right-3 text-sm text-gray-400">
@@ -75,7 +117,6 @@ const CreatePost = () => {
           )}
         </div>
 
-        {/* Bottom Bar */}
         <div className="flex items-center justify-between border-t border-gray-200 pt-4">
           <label
             htmlFor="images"

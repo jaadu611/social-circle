@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Users,
   UserPlus,
@@ -8,16 +8,20 @@ import {
   UserXIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import {
-  dummyConnectionsData as connections,
-  dummyFollowersData as followers,
-  dummyFollowingData as following,
-  dummyPendingConnectionsData as pendingConnections,
-} from "../assets/assets";
+import { useSelector, useDispatch } from "react-redux";
+import { useAuth } from "@clerk/clerk-react";
+import { fetchConnections } from "../features/connectionSlice";
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
 const Connections = () => {
   const [currentTab, setCurrentTab] = useState("Followers");
   const navigate = useNavigate();
+  const { getToken } = useAuth();
+  const dispatch = useDispatch();
+  const { connections, pendingConnections, followers, following } = useSelector(
+    (state) => state.connections
+  );
 
   const dataArray = [
     { label: "Followers", value: followers, icon: Users },
@@ -26,10 +30,33 @@ const Connections = () => {
     { label: "Connections", value: connections, icon: UserPlus },
   ];
 
+  const acceptConnection = async (userId) => {
+    try {
+      const { data } = await api.post(
+        "/api/user/accept",
+        { id: userId },
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        dispatch(fetchConnections(await getToken()));
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  useEffect(() => {
+    getToken().then((token) => {
+      dispatch(fetchConnections(token));
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
-        {/* Title */}
         <div className="mb-10 text-center px-4 sm:px-6">
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-900 mb-1 sm:mb-2">
             Connections
@@ -39,7 +66,6 @@ const Connections = () => {
           </p>
         </div>
 
-        {/* Count cards */}
         <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mb-8">
           {dataArray.map((item, index) => (
             <div
@@ -56,7 +82,6 @@ const Connections = () => {
           ))}
         </div>
 
-        {/* Tab Buttons */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-10">
           {dataArray.map((tab) => (
             <button
@@ -74,7 +99,6 @@ const Connections = () => {
           ))}
         </div>
 
-        {/* User Cards */}
         <div className="grid custom-cols-connections grid-cols-1 gap-4 justify-center">
           {dataArray
             .find((item) => item.label === currentTab)
@@ -109,13 +133,19 @@ const Connections = () => {
                     </button>
 
                     {currentTab === "Following" && (
-                      <button className="flex-1 px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-xs font-medium sm:font-semibold rounded-md sm:rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 shadow transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-0.5 sm:gap-1">
+                      <button
+                        onClick={() => handleUnfollow(user._id)}
+                        className="flex-1 px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-xs font-medium sm:font-semibold rounded-md sm:rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 shadow transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-0.5 sm:gap-1"
+                      >
                         <UserXIcon className="h-3 w-3 sm:h-4 sm:w-4" /> Unfollow
                       </button>
                     )}
 
                     {currentTab === "Pending" && (
-                      <button className="flex-1 px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-xs font-medium sm:font-semibold rounded-md sm:rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 shadow transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-0.5 sm:gap-1">
+                      <button
+                        onClick={() => acceptConnection(user._id)}
+                        className="flex-1 px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-xs font-medium sm:font-semibold rounded-md sm:rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 shadow transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-0.5 sm:gap-1"
+                      >
                         <UserPlus className="h-3 w-3 sm:h-4 sm:w-4" /> Accept
                       </button>
                     )}

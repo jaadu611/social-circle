@@ -1,28 +1,48 @@
 import React, { useState } from "react";
-import { dummyConnectionsData } from "../assets/assets";
 import { Search } from "lucide-react";
 import UserCard from "../components/UserCard";
 import Loading from "../components/Loading";
+import api from "../api/axios";
+import { useAuth } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
 
 const Discover = () => {
   const [input, setInput] = useState("");
-  const [users, setUsers] = useState(dummyConnectionsData);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const { getToken } = useAuth();
 
   const handleSearch = async (e) => {
     if (e.key === "Enter") {
-      setUsers([]);
-      setLoading(true);
-      setTimeout(() => {
-        setUsers(dummyConnectionsData);
+      try {
+        setLoading(true);
+        setUsers([]);
+        const token = await getToken();
+        const { data } = await api.post(
+          "/api/user/discover",
+          { input },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (data.success) {
+          setUsers(data.users);
+        } else {
+          toast.error(data.message || "Failed to fetch users");
+        }
+      } catch (error) {
+        toast.error(error.message || "Something went wrong");
+      } finally {
         setLoading(false);
-      }, 1000);
+      }
     }
   };
 
   return (
     <div className="h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col">
-      {/* Sticky Header + Search */}
       <div className="sticky top-0 z-10 border-b border-gray-200 px-4 py-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-4">
@@ -49,15 +69,19 @@ const Discover = () => {
         </div>
       </div>
 
-      {/* Scrollable User Section */}
       <div className="flex-1 overflow-y-auto px-4 py-6 no-scrollbar">
         {loading ? (
           <Loading height="60vh" />
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {users.map((user) => (
               <UserCard key={user._id} user={user} />
             ))}
+            {users.length === 0 && input.trim() !== "" && !loading && (
+              <p className="text-center text-gray-500 col-span-full">
+                No users found matching "{input}"
+              </p>
+            )}
           </div>
         )}
       </div>

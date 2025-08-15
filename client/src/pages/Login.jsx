@@ -6,14 +6,12 @@ import { SignIn } from "@clerk/clerk-react";
 const Login = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Bg image */}
       <img
         src={assets.bgImage}
         alt="bg-image"
         className="absolute top-0 left-0 w-full h-full object-cover -z-1"
       />
 
-      {/* left side */}
       <div className="flex-1 flex flex-col items-start justify-between p-4 md:p-10 lg:pl-40">
         <img src={assets.logo} alt="logo" className="h-16 object-contain" />
         <>
@@ -47,7 +45,6 @@ const Login = () => {
         <span className="md:h-10" />
       </div>
 
-      {/* right side login form */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
         <SignIn />
       </div>
