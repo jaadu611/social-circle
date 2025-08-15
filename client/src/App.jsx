@@ -35,10 +35,6 @@ const App = () => {
   useEffect(() => {
     socketRef.current = io(import.meta.env.VITE_BASEURL);
 
-    socketRef.current.on("connect", () => {
-      console.log("Connected to socket:", socketRef.current.id);
-    });
-
     return () => {
       socketRef.current.disconnect();
     };
