@@ -84,7 +84,7 @@ const PostCard = ({ post, activeLink = true }) => {
         className="inline-flex group items-center gap-3 cursor-pointer"
       >
         <img
-          src={post.user.profile_picture}
+          src={post.user?.profile_picture}
           alt={post.user.full_name}
           className="w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-md transition-all duration-300 group-hover:ring-2 group-hover:ring-offset-2 group-hover:ring-indigo-500 object-cover"
         />

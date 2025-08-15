@@ -114,7 +114,7 @@ const ChatBox = () => {
       {/* Header */}
       <div className="flex items-center gap-4 px-5 py-4 bg-white border-b border-gray-300 sticky top-0 z-10">
         <img
-          src={chatUser.profile_picture}
+          src={chatUser?.profile_picture}
           alt="User Avatar"
           className="h-11 w-11 rounded-full border-2 border-indigo-500"
         />
@@ -150,7 +150,7 @@ const ChatBox = () => {
               >
                 {!isSelf && (
                   <img
-                    src={chatUser.profile_picture}
+                    src={chatUser?.profile_picture}
                     alt="sender"
                     className="h-8 w-8 rounded-full mr-2 mt-1 object-cover"
                   />

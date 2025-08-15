@@ -111,7 +111,7 @@ const ProfileModel = ({ setShowEdit }) => {
                 src={
                   editForm.profile_picture
                     ? URL.createObjectURL(editForm.profile_picture)
-                    : user.profile_picture
+                    : user?.profile_picture
                 }
                 alt="Profile"
                 className="w-40 h-40 rounded-full border-4 border-white object-cover"

@@ -101,7 +101,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
           {/* Avatar */}
           <div className="flex-shrink-0 w-32 h-32 rounded-full overflow-hidden border-4 border-white -mt-24 md:-mt-26 relative z-10">
             <img
-              src={user.profile_picture}
+              src={user?.profile_picture}
               alt={user.full_name}
               className="w-full h-full object-cover"
             />

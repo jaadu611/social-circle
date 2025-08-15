@@ -108,7 +108,7 @@ const Connections = () => {
                 className="w-full flex gap-4 group items-start bg-white rounded-xl p-4 sm:p-5 shadow hover:shadow-md transition-all"
               >
                 <img
-                  src={user.profile_picture}
+                  src={user?.profile_picture}
                   alt="Profile"
                   className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-md group-hover:ring-2 group-hover:ring-indigo-600 transition-all duration-200"
                 />

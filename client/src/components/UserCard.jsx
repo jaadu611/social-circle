@@ -65,7 +65,7 @@ const UserCard = ({ user }) => {
         <div className="flex flex-col items-center text-center">
           <div className="rounded-full transition-all duration-200 group-hover:ring-2 group-hover:ring-indigo-500">
             <img
-              src={user.profile_picture}
+              src={user?.profile_picture}
               alt={user.full_name}
               className="w-16 h-16 rounded-full shadow object-cover"
             />

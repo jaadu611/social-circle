@@ -131,7 +131,7 @@ const StoriesBar = () => {
 
               {/* User avatar */}
               <img
-                src={story.user.profile_picture}
+                src={story.user?.profile_picture}
                 alt=""
                 className="absolute top-2 left-2 size-8 rounded-full ring-2 ring-white shadow-md z-30 transition-all duration-300 group-hover:ring-amber-400"
               />
