@@ -107,11 +107,14 @@ const Connections = () => {
                 key={user._id}
                 className="w-full flex gap-4 group items-start bg-white rounded-xl p-4 sm:p-5 shadow hover:shadow-md transition-all"
               >
-                <img
-                  src={user?.profile_picture}
-                  alt="Profile"
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-md group-hover:ring-2 group-hover:ring-indigo-600 transition-all duration-200"
-                />
+                {user && (
+                  <img
+                    src={user.profile_picture}
+                    alt="Profile"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-md group-hover:ring-2 group-hover:ring-indigo-600 transition-all duration-200"
+                  />
+                )}
+
                 <div className="flex-1">
                   <p className="relative w-fit text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-purple-700 transition-all duration-200 after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-[1.5px] after:w-0 after:bg-purple-500 group-hover:after:w-full after:transition-all after:duration-300">
                     {user.full_name}

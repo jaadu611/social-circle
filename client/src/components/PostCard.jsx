@@ -83,11 +83,13 @@ const PostCard = ({ post, activeLink = true }) => {
         }
         className="inline-flex group items-center gap-3 cursor-pointer"
       >
-        <img
-          src={post.user?.profile_picture}
-          alt={post.user.full_name}
-          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-md transition-all duration-300 group-hover:ring-2 group-hover:ring-offset-2 group-hover:ring-indigo-500 object-cover"
-        />
+        {post.user && (
+          <img
+            src={post.user.profile_picture}
+            alt={post.user.full_name}
+            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-md transition-all duration-300 group-hover:ring-2 group-hover:ring-offset-2 group-hover:ring-indigo-500 object-cover"
+          />
+        )}
         <div className="flex flex-col justify-center text-sm sm:text-base">
           <span className="relative w-fit text-gray-700 font-semibold transition-colors duration-200 group-hover:text-indigo-600 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[1.5px] after:bg-indigo-500 after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left">
             {post.user.full_name}

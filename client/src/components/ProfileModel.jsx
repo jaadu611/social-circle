@@ -107,15 +107,18 @@ const ProfileModel = ({ setShowEdit }) => {
               }}
             />
             <label htmlFor="profile_picture">
-              <img
-                src={
-                  editForm.profile_picture
-                    ? URL.createObjectURL(editForm.profile_picture)
-                    : user?.profile_picture
-                }
-                alt="Profile"
-                className="w-40 h-40 rounded-full border-4 border-white object-cover"
-              />
+              {(editForm.profile_picture || user?.profile_picture) && (
+                <img
+                  src={
+                    editForm.profile_picture
+                      ? URL.createObjectURL(editForm.profile_picture)
+                      : user.profile_picture
+                  }
+                  alt="Profile"
+                  className="w-40 h-40 rounded-full border-4 border-white object-cover"
+                />
+              )}
+
               <div className="absolute inset-0 hidden cursor-pointer group-hover:flex items-center justify-center bg-black/20 rounded-full">
                 <Pencil className="w-5 h-5 text-white" />
               </div>

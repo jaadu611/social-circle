@@ -86,7 +86,6 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
   return (
     <div className="rounded-xl shadow-lg">
       <div className="relative max-w-5xl mx-auto p-6 sm:p-8 md:p-10">
-        {/* Edit button */}
         {isOwnProfile && (
           <button
             onClick={() => setShowEdit(true)}
@@ -98,18 +97,17 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
         )}
 
         <div className="flex flex-col bp-411:flex-row items-center bp-411:items-start gap-6">
-          {/* Avatar */}
           <div className="flex-shrink-0 w-32 h-32 rounded-full overflow-hidden border-4 border-white -mt-24 md:-mt-26 relative z-10">
-            <img
-              src={user?.profile_picture}
-              alt={user.full_name}
-              className="w-full h-full object-cover"
-            />
+            {user && (
+              <img
+                src={user.profile_picture}
+                alt={user.full_name || "User"}
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
 
-          {/* Info + Buttons */}
           <div className="flex-1 w-full flex flex-col bp-411:flex-row bp-411:justify-between gap-4 bp-411:gap-6 mt-4 bp-411:mt-0 z-0">
-            {/* User Info */}
             <div className="flex-1 min-w-0 text-center bp-411:text-left">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
                 {user.full_name}
@@ -124,7 +122,6 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
                 </p>
               )}
 
-              {/* Stats */}
               <div className="flex mt-4 text-gray-700 justify-center bp-411:justify-start">
                 <div className="min-w-[80px] text-center">
                   <span className="font-bold text-lg sm:text-xl">
@@ -152,7 +149,6 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
                 </div>
               </div>
 
-              {/* Location & Joined */}
               <div className="flex flex-wrap gap-4 mt-4 text-gray-500 text-sm justify-center bp-411:justify-start">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
@@ -165,7 +161,6 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
               </div>
             </div>
 
-            {/* Buttons */}
             {!isOwnProfile && (
               <div className="flex flex-col items-center md:flex-row bp-411:items-end gap-3 mt-4 bp-411:mt-0">
                 <button

@@ -29,11 +29,13 @@ const Messages = () => {
                 {/* Avatar */}
                 <div className="relative mb-3">
                   <div className="rounded-full p-[3px] bg-gradient-to-tr from-purple-400 via-pink-400 to-yellow-400 transition-all duration-300 hover:from-purple-500 hover:via-pink-500 hover:to-blue-500">
-                    <img
-                      src={user?.profile_picture}
-                      alt={user.full_name}
-                      className="rounded-full w-16 h-16 sm:w-20 sm:h-20 object-cover border-2 border-white shadow-md"
-                    />
+                    {user && (
+                      <img
+                        src={user.profile_picture}
+                        alt={user.full_name || "User"}
+                        className="rounded-full w-16 h-16 sm:w-20 sm:h-20 object-cover border-2 border-white shadow-md"
+                      />
+                    )}
                   </div>
                 </div>
 

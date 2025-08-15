@@ -60,11 +60,14 @@ const CreatePost = () => {
     <div className="min-h-screen bg-gradient-to-br from-white to-slate-100 py-10 px-4">
       <div className="max-w-[100vw] mx-auto bg-white rounded-xl shadow-lg p-6 space-y-5">
         <div className="flex items-center gap-3">
-          <img
-            src={user?.profile_picture}
-            alt="Profile"
-            className="w-14 h-14 rounded-full border border-gray-300 object-cover"
-          />
+          {user && (
+            <img
+              src={user.profile_picture}
+              alt="Profile"
+              className="w-14 h-14 rounded-full border border-gray-300 object-cover"
+            />
+          )}
+
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
               {user.full_name}

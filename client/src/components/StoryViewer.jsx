@@ -94,11 +94,14 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
 
       <Link to={`/profile/${viewStory.user._id}`}>
         <div className="absolute z-30 top-4 left-4 flex items-center gap-3 p-2.5 pr-4 rounded-full backdrop-blur-md bg-black/50 shadow-lg border border-white/20 cursor-pointer transform transition-all duration-200 hover:scale-105 hover:bg-black/70 hover:shadow-xl">
-          <img
-            src={viewStory.user?.profile_picture}
-            alt={viewStory.user?.full_name || "User"}
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white/70 shadow-md"
-          />
+          {viewStory.user && (
+            <img
+              src={viewStory.user.profile_picture}
+              alt={viewStory.user.full_name || "User"}
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white/70 shadow-md"
+            />
+          )}
+
           <span className="text-white font-semibold text-sm sm:text-base tracking-wide truncate max-w-[140px] sm:max-w-[200px]">
             {viewStory.user?.full_name}
           </span>

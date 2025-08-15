@@ -64,11 +64,13 @@ const UserCard = ({ user }) => {
       <Link to={`/profile/${user._id}`}>
         <div className="flex flex-col items-center text-center">
           <div className="rounded-full transition-all duration-200 group-hover:ring-2 group-hover:ring-indigo-500">
-            <img
-              src={user?.profile_picture}
-              alt={user.full_name}
-              className="w-16 h-16 rounded-full shadow object-cover"
-            />
+            {user && (
+              <img
+                src={user.profile_picture}
+                alt={user.full_name || "User"}
+                className="w-16 h-16 rounded-full shadow object-cover"
+              />
+            )}
           </div>
 
           <h2 className="text-[10px] sm:text-xs md:text-sm font-semibold text-gray-800 relative mt-3 after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-indigo-500 after:transition-all after:duration-300 group-hover:after:w-full">

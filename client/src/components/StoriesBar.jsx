@@ -130,11 +130,13 @@ const StoriesBar = () => {
               )}
 
               {/* User avatar */}
-              <img
-                src={story.user?.profile_picture}
-                alt=""
-                className="absolute top-2 left-2 size-8 rounded-full ring-2 ring-white shadow-md z-30 transition-all duration-300 group-hover:ring-amber-400"
-              />
+              {story.user && (
+                <img
+                  src={story.user.profile_picture}
+                  alt=""
+                  className="absolute top-2 left-2 size-8 rounded-full ring-2 ring-white shadow-md z-30 transition-all duration-300 group-hover:ring-amber-400"
+                />
+              )}
 
               {/* Time */}
               <p className="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded-md shadow-sm backdrop-blur-sm z-30 transition-all duration-300 group-hover:bg-black/70">

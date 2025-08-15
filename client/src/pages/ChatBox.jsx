@@ -113,11 +113,13 @@ const ChatBox = () => {
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
       <div className="flex items-center gap-4 px-5 py-4 bg-white border-b border-gray-300 sticky top-0 z-10">
-        <img
-          src={chatUser?.profile_picture}
-          alt="User Avatar"
-          className="h-11 w-11 rounded-full border-2 border-indigo-500"
-        />
+        {chatUser && (
+          <img
+            src={chatUser.profile_picture}
+            alt="User Avatar"
+            className="h-11 w-11 rounded-full border-2 border-indigo-500"
+          />
+        )}
         <div>
           <h2 className="text-lg font-semibold">{chatUser.full_name}</h2>
           <p className="text-sm text-gray-500">@{chatUser.username}</p>
@@ -148,13 +150,14 @@ const ChatBox = () => {
                   isSelf ? "justify-end items-end" : "justify-start items-end"
                 }`}
               >
-                {!isSelf && (
+                {!isSelf && chatUser && (
                   <img
-                    src={chatUser?.profile_picture}
+                    src={chatUser.profile_picture}
                     alt="sender"
                     className="h-8 w-8 rounded-full mr-2 mt-1 object-cover"
                   />
                 )}
+
                 <div className="flex flex-col max-w-[70%]">
                   <div
                     className={`rounded-xl px-4 py-2 text-sm shadow break-words ${
