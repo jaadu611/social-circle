@@ -162,7 +162,7 @@ const ProfileModel = ({ setShowEdit }) => {
             <textarea
               rows={3}
               maxLength={160}
-              className="w-full resize-none px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition no-scrollbar placeholder-gray-400"
+              className="w-full resize-none px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition placeholder-gray-400"
               placeholder="Write something about yourself"
               value={editForm.bio}
               onChange={(e) =>

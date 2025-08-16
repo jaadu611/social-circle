@@ -36,7 +36,7 @@ const StoriesBar = () => {
   const isLightColor = (color) => tinycolor(color).isLight();
 
   return (
-    <div className="w-full overflow-x-auto no-scrollbar">
+    <div className="w-full overflow-x-auto ">
       <div className="inline-flex gap-3 sm:gap-4 md:gap-5 pb-2 sm:pb-3">
         {/* Create Story */}
         <motion.div

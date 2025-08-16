@@ -75,7 +75,7 @@ const Discover = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-6 no-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 py-6">
         {loading ? (
           <Loading height="60vh" />
         ) : (

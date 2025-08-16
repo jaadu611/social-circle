@@ -113,23 +113,21 @@ const PostCard = ({ post, activeLink = true }) => {
       {/* Image Carousel */}
       {Array.isArray(post.image_urls) && post.image_urls.length > 0 && (
         <div className="relative w-full overflow-hidden rounded-lg h-[250px] sm:h-[300px] md:h-[350px]">
-          <AnimatePresence mode="wait">
-            {loading && <Loading height="100%" />}
+          {loading && <Loading height="100%" />}
 
-            <motion.img
-              key={currentIndex}
-              src={post.image_urls[currentIndex]}
-              alt={`post-${currentIndex}`}
-              loading="lazy"
-              className="w-full h-full object-cover rounded-lg shadow-sm object-center"
-              initial={{ x: 100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -100, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              onLoad={() => setLoading(false)}
-              onError={() => setLoading(false)}
-            />
-          </AnimatePresence>
+          <motion.img
+            key={currentIndex}
+            src={post.image_urls[currentIndex]}
+            alt={`post-${currentIndex}`}
+            loading="lazy"
+            className="w-full h-full object-contain rounded-lg shadow-sm object-center"
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -100, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            onLoad={() => setLoading(false)}
+            onError={() => setLoading(false)}
+          />
 
           {post.image_urls.length > 1 && (
             <>

@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  createContext,
-  useRef,
-  useState,
-  useMemo,
-} from "react";
+import React, { useEffect, createContext, useRef, useMemo } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,7 +20,6 @@ import Loading from "./components/Loading";
 import { fetchUser } from "./features/userSlice";
 import { fetchConnections } from "./features/connectionSlice";
 
-// Create Socket.IO context
 export const SocketContext = createContext();
 
 const App = () => {
@@ -35,17 +28,16 @@ const App = () => {
   const dispatch = useDispatch();
   const loading = useSelector((state) => state.user.loading);
 
-  // Socket reference
   const socketRef = useRef(null);
 
-  // Initialize socket only after user is loaded
+  // Initialize socket after user exists
   useEffect(() => {
-    if (!user) return;
+    if (!user || socketRef.current) return;
 
     socketRef.current = io(import.meta.env.VITE_BASEURL);
 
     return () => {
-      socketRef.current.disconnect();
+      socketRef.current?.disconnect();
     };
   }, [user]);
 
@@ -53,26 +45,29 @@ const App = () => {
   useEffect(() => {
     if (!user) return;
 
-    const tokenPromise = getToken();
-
-    tokenPromise.then((token) => {
+    getToken().then((token) => {
       dispatch(fetchUser(token));
       dispatch(fetchConnections(token));
     });
   }, [user, getToken, dispatch]);
 
-  if (!authLoaded || !userLoaded || loading || !socketRef.current) {
+  // Memoize socket context (always called, never conditionally)
+  const socketValue = useMemo(() => socketRef.current, [socketRef.current]);
+
+  // Conditional rendering after hooks
+  if (!authLoaded || !userLoaded || loading) {
     return <Loading />;
   }
 
-  // Memoize socket context to prevent unnecessary re-renders
-  const socketValue = useMemo(() => socketRef.current, [socketRef.current]);
+  if (!user) {
+    return <Login />;
+  }
 
   return (
     <SocketContext.Provider value={socketValue}>
       <Toaster />
       <Routes>
-        <Route path="/" element={!user ? <Login /> : <Layout />}>
+        <Route path="/" element={<Layout />}>
           <Route index element={<Feed />} />
           <Route path="messages" element={<Messages />} />
           <Route path="messages/:userId" element={<ChatBox user={user} />} />

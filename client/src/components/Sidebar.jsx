@@ -7,12 +7,15 @@ import { useClerk, UserButton } from "@clerk/clerk-react";
 import { useSelector } from "react-redux";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
-  const user = useSelector((state) => state.user.value);
+  const user = useSelector((state) => state.user?.value);
   const { signOut } = useClerk();
+
+  const displayName = user?.full_name || "Guest";
+  const displayUsername = user?.username ? `@${user.username}` : "";
 
   return (
     <div
-      className={`bg-white border-r border-gray-200 h-full flex flex-col justify-between max-sm:absolute top-0 bottom-0 z-50 w-60 md:w-52 sm:w-48 max-[400px]:w-44 xl:w-72 transition-transform duration-300 ease-in-out ${
+      className={`bg-white border-r border-gray-200 h-full flex flex-col justify-between max-sm:absolute top-0 bottom-0 z-50 w-60 md:w-52 sm:w-48 max-[400px]:w-44 xl:w-72 min-w-[12rem] transition-transform duration-300 ease-in-out ${
         sidebarOpen ? "translate-x-0" : "max-sm:-translate-x-full"
       }`}
     >
@@ -38,24 +41,36 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         </Link>
       </div>
 
-      <div className="flex items-center justify-between border-t border-gray-200 p-4 px-6">
-        <div className="flex items-center gap-2 cursor-pointer transition-all duration-200">
-          <UserButton />
-          <div className="flex flex-col">
-            <span className="text-base sm:text-sm font-semibold text-gray-800">
-              {user.full_name}
+      {/* Bottom user area */}
+      {/* Bottom user area */}
+      <div className="flex items-center justify-between border-t border-gray-200 p-3 px-4">
+        <div className="flex items-center gap-2 cursor-pointer transition-all duration-200 flex-shrink-0">
+          {/* Avatar wrapper: smaller and centered */}
+          <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
+            <UserButton />
+          </div>
+
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm font-semibold text-gray-800 truncate">
+              {displayName}
             </span>
-            {user.username && (
-              <span className="text-sm sm:text-xs text-gray-500">
-                @{user.username}
+            {displayUsername && (
+              <span className="text-xs text-gray-500 truncate">
+                {displayUsername}
               </span>
             )}
           </div>
         </div>
-        <LogOut
-          onClick={signOut}
-          className="w-5 h-5 text-gray-400 hover:text-red-600 cursor-pointer transition-colors"
-        />
+
+        {/* Logout button: vertically center with avatar */}
+        <button
+          onClick={() => signOut()}
+          className="flex group items-center justify-center cursor-pointer rounded-full flex-shrink-0 mb-[3px] ml-[15px]"
+          title="Sign Out"
+          aria-label="Sign Out"
+        >
+          <LogOut className="w-4 h-4 sm:h-4 sm:w-4 md:h-5 md:w-5 text-gray-600 group-hover:text-red-500 transition-all duration-200" />
+        </button>
       </div>
     </div>
   );

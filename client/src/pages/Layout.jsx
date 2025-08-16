@@ -25,7 +25,7 @@ const Layout = () => {
   return (
     <div className="w-full h-screen flex relative">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <div className="flex-1 bg-slate-50 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 bg-slate-50 overflow-y-auto">
         <Outlet />
       </div>
       {SidebarToggleIcon}
