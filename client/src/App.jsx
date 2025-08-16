@@ -1,4 +1,10 @@
-import React, { useEffect, createContext, useRef } from "react";
+import React, {
+  useEffect,
+  createContext,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import { Route, Routes } from "react-router-dom";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,41 +30,46 @@ import { fetchConnections } from "./features/connectionSlice";
 export const SocketContext = createContext();
 
 const App = () => {
-  const { getToken } = useAuth();
-  const { isLoaded, user } = useUser();
+  const { getToken, isLoaded: authLoaded } = useAuth();
+  const { isLoaded: userLoaded, user } = useUser();
   const dispatch = useDispatch();
   const loading = useSelector((state) => state.user.loading);
 
-  // Initialize socket only once using useRef
+  // Socket reference
   const socketRef = useRef(null);
 
+  // Initialize socket only after user is loaded
   useEffect(() => {
+    if (!user) return;
+
     socketRef.current = io(import.meta.env.VITE_BASEURL);
 
     return () => {
       socketRef.current.disconnect();
     };
-  }, []);
+  }, [user]);
 
-  // Fetch user data and connections when user is loaded
+  // Fetch user and connections
   useEffect(() => {
     if (!user) return;
 
-    const fetchData = async () => {
-      const token = await getToken();
+    const tokenPromise = getToken();
+
+    tokenPromise.then((token) => {
       dispatch(fetchUser(token));
       dispatch(fetchConnections(token));
-    };
+    });
+  }, [user, getToken, dispatch]);
 
-    fetchData();
-  }, [user]);
-
-  if (!isLoaded || loading || !socketRef.current) {
+  if (!authLoaded || !userLoaded || loading || !socketRef.current) {
     return <Loading />;
   }
 
+  // Memoize socket context to prevent unnecessary re-renders
+  const socketValue = useMemo(() => socketRef.current, [socketRef.current]);
+
   return (
-    <SocketContext.Provider value={socketRef.current}>
+    <SocketContext.Provider value={socketValue}>
       <Toaster />
       <Routes>
         <Route path="/" element={!user ? <Login /> : <Layout />}>

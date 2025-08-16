@@ -22,7 +22,6 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
     purple: "#a855f7",
     indigo: "#6366f1",
   };
-
   const bgColors = Object.values(colorPalette);
 
   const [mode, setMode] = useState("text");
@@ -32,43 +31,45 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
 
   const textColor = tinycolor(background).isLight() ? "#1f2937" : "#f8fafc";
-
   const { getToken } = useAuth();
+
   const MAX_VIDEO_DURATION_SECONDS = 60;
   const MAX_VIDEO_SIZE_MB = 50;
 
   const handleMediaUpload = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.type.startsWith("video")) {
-        if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
-          toast.error(`File cant be more than ${MAX_VIDEO_SIZE_MB} MB`);
-          setMedia(null);
-          setPreviewUrl(null);
-          return;
+    if (!file) return;
+
+    const isVideo = file.type.startsWith("video");
+    const isImage = file.type.startsWith("image");
+
+    if (isVideo && file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+      toast.error(`File can’t be more than ${MAX_VIDEO_SIZE_MB} MB`);
+      return;
+    }
+
+    if (isVideo) {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        if (video.duration > MAX_VIDEO_DURATION_SECONDS) {
+          toast.error(
+            `Video duration can’t be more than ${MAX_VIDEO_DURATION_SECONDS} seconds`
+          );
+        } else {
+          setMedia(file);
+          setPreviewUrl(URL.createObjectURL(file));
+          setText("");
+          setMode("media");
         }
-        const video = document.createElement("video");
-        video.preload = "metadata";
-        video.onloadedmetadata = () => {
-          window.URL.revokeObjectURL(video.src);
-          if (video.duration > MAX_VIDEO_DURATION_SECONDS) {
-            toast.error(
-              `Video duration cant be more than ${MAX_VIDEO_DURATION_SECONDS} seconds`
-            );
-          } else {
-            setMedia(file);
-            setPreviewUrl(URL.createObjectURL(file));
-            setText("");
-            setMode("media");
-          }
-        };
-        video.src = URL.createObjectURL(file);
-      } else if (file.type.startsWith("image")) {
-        setMedia(file);
-        setPreviewUrl(URL.createObjectURL(file));
-        setText("");
-        setMode("media");
-      }
+      };
+      video.src = URL.createObjectURL(file);
+    } else if (isImage) {
+      setMedia(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setText("");
+      setMode("media");
     }
   };
 
@@ -80,26 +81,26 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
           : "video"
         : "text";
 
-    if (media_type === "text" && !text) {
+    if (media_type === "text" && !text.trim()) {
       toast.error("Please enter some text");
+      return;
     }
 
-    let formData = new FormData();
+    const formData = new FormData();
     formData.append("content", text);
     formData.append("media_type", media_type);
-    formData.append("media", media);
+    if (media) formData.append("media", media);
     formData.append("background_color", background);
 
-    const token = await getToken();
-
     try {
+      const token = await getToken();
       const { data } = await api.post("/api/story/create", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (data.success) {
-        setShowModel(false);
         toast.success("Story posted");
+        setShowModel(false);
         fetchStories();
       } else {
         toast.error(data.message);
@@ -110,49 +111,53 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-110 min-h-screen bg-black/80 backdrop-blur text-white flex justify-center items-center p-4">
+    <div className="fixed inset-0 z-[110] flex justify-center items-center p-4 bg-black/80 backdrop-blur text-white">
       <div className="w-full max-w-md">
-        <div className="text-center mb-4 flex justify-between items-center">
-          <button
-            onClick={() => setShowModel(false)}
-            className="text-white cursor-pointer"
-          >
-            <X className="hover:scale-105 transition-all duration-200 hover:bg-gray-500/10 rounded-full p-1 size-8" />
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4 text-center">
+          <button onClick={() => setShowModel(false)} className="text-white">
+            <X className="hover:scale-105 transition-all duration-200 rounded-full p-1" />
           </button>
           <h2 className="text-lg font-semibold">Create Story</h2>
           <span className="w-10" />
         </div>
+
+        {/* Story Preview */}
         <div
-          className="rounded-lg h-96 flex justify-center items-center relative"
+          className="relative flex justify-center items-center rounded-lg h-96"
           style={{ backgroundColor: background }}
         >
           {mode === "text" && (
             <textarea
-              className="bg-transparent h-full w-full p-6 text-lg resize-none focus:outline-none placeholder-opacity-70"
-              style={{
-                color: textColor,
-                caretColor: textColor,
-                backgroundColor: background,
-              }}
-              placeholder="What's on your mind?"
-              onChange={(e) => setText(e.target.value)}
               value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="What's on your mind?"
+              className="w-full h-full p-6 text-lg resize-none bg-transparent focus:outline-none placeholder-opacity-70"
+              style={{ color: textColor, caretColor: textColor }}
             />
           )}
 
-          {mode === "media" &&
-            previewUrl &&
-            (media?.type.startsWith("image") ? (
-              <img
-                src={previewUrl}
-                alt=""
-                className="h-full"
-              />
-            ) : (
-              <video src={previewUrl} className="object-contain max-h-full" />
-            ))}
+          {mode === "media" && previewUrl && (
+            <>
+              {media?.type.startsWith("image") ? (
+                <img
+                  src={previewUrl}
+                  alt=""
+                  className="h-full object-contain"
+                />
+              ) : (
+                <video
+                  src={previewUrl}
+                  className="h-full object-contain"
+                  controls
+                />
+              )}
+            </>
+          )}
         </div>
-        <div className="flex mt-4 gap-2 justify-center">
+
+        {/* Color Picker */}
+        <div className="flex gap-2 mt-4 justify-center flex-wrap">
           {bgColors.map((color) => (
             <div
               key={color}
@@ -162,6 +167,8 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
             />
           ))}
         </div>
+
+        {/* Mode Switch */}
         <div className="flex gap-2 mt-4">
           <button
             onClick={() => {
@@ -169,7 +176,7 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
               setMedia(null);
               setPreviewUrl(null);
             }}
-            className={`flex-1 cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 p-2 rounded ${
+            className={`flex-1 flex items-center justify-center gap-2 p-2 rounded cursor-pointer transition ${
               mode === "text"
                 ? "bg-white text-black hover:bg-gray-300"
                 : "bg-zinc-700 hover:bg-zinc-800"
@@ -177,29 +184,32 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
           >
             <TextIcon size={18} /> Text
           </button>
+
           <label
-            className={`flex-1 flex items-center transition-all duration-200 justify-center gap-2 p-2 rounded cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-2 p-2 rounded cursor-pointer transition ${
               mode === "media"
                 ? "bg-white text-black hover:bg-gray-300"
                 : "bg-zinc-700 hover:bg-zinc-800"
             }`}
           >
             <input
-              onChange={handleMediaUpload}
               type="file"
               accept="image/*, video/*"
               hidden
+              onChange={handleMediaUpload}
             />
             <Upload size={18} /> Photo/Video
           </label>
         </div>
+
+        {/* Submit */}
         <button
           onClick={() =>
             toast.promise(handleCreateStory(), {
               loading: "Saving...",
             })
           }
-          className="flex items-center justify-center gap-2 text-white py-3 mt-4 w-full rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition cursor-pointer"
+          className="flex items-center justify-center gap-2 w-full mt-4 py-3 rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition"
         >
           <Sparkle size={18} /> Create Story
         </button>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   MapPin,
   MessageCircle,
@@ -15,21 +15,46 @@ import { toast } from "react-hot-toast";
 const UserCard = ({ user }) => {
   const currentUser = useSelector((state) => state.user.value);
   const [isFollowing, setIsFollowing] = useState(
-    currentUser?.following.includes(user._id)
+    currentUser?.following?.includes(user._id) || false
   );
   const { getToken } = useAuth();
   const navigate = useNavigate();
 
+  const isConnected = useMemo(
+    () => currentUser.connections?.includes(user._id),
+    [currentUser.connections, user._id]
+  );
+
   const handleFollow = async () => {
     try {
+      const token = await getToken();
       const { data } = await api.post(
         "/api/user/follow",
         { id: user._id },
-        { headers: { Authorization: `Bearer ${await getToken()}` } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (data.success) {
         toast.success(data.message);
-        setIsFollowing((prev) => !prev);
+        setIsFollowing(true);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/user/unfollow",
+        { id: user._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        setIsFollowing(false);
       } else {
         toast.error(data.message);
       }
@@ -39,15 +64,17 @@ const UserCard = ({ user }) => {
   };
 
   const handleConnectionRequest = async () => {
-    if (currentUser.connections.includes(user._id)) {
-      return navigate(`/messages/${user._id}`);
+    if (isConnected) {
+      navigate(`/messages/${user._id}`);
+      return;
     }
 
     try {
+      const token = await getToken();
       const { data } = await api.post(
         "/api/user/connection",
         { id: user._id },
-        { headers: { Authorization: `Bearer ${await getToken()}` } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (data.success) {
         toast.success(data.message);
@@ -64,7 +91,7 @@ const UserCard = ({ user }) => {
       <Link to={`/profile/${user._id}`}>
         <div className="flex flex-col items-center text-center">
           <div className="rounded-full transition-all duration-200 group-hover:ring-2 group-hover:ring-indigo-500">
-            {user && (
+            {user?.profile_picture && (
               <img
                 src={user.profile_picture}
                 alt={user.full_name || "User"}
@@ -93,7 +120,7 @@ const UserCard = ({ user }) => {
 
       <div className="hidden lg:flex justify-center items-center gap-2 mt-4 text-gray-600 text-[9px] sm:text-xs md:text-sm">
         {user.location && (
-          <div className="flex items-center gap-1 border border-gray-300 rounded-full px-3 py-1 text-[9px] sm:text-xs md:text-sm transition-colors group-hover:bg-slate-100 group-hover:border-slate-400 group-hover:text-slate-800 max-w-[150px] sm:max-w-[180px] md:max-w-[200px] break-words truncate">
+          <div className="flex items-center gap-1 border border-gray-300 rounded-full px-3 py-1 text-[9px] sm:text-xs md:text-sm transition-colors group-hover:bg-slate-100 group-hover:border-slate-400 group-hover:text-slate-800 max-w-[200px] truncate">
             <MapPin className="w-4 h-4 shrink-0" />
             <span className="truncate">{user.location}</span>
           </div>
@@ -106,25 +133,19 @@ const UserCard = ({ user }) => {
 
       <div className="flex flex-col justify-center gap-2 mt-4">
         <button
-          onClick={handleFollow}
-          className="flex-1 min-w-[100px] cursor-pointer rounded-md flex justify-center items-center gap-1 text-white text-[8px] xs:text-[9px] sm:text-sm font-medium transition bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95  py-2 xs:py-1.5 sm:py-2"
+          onClick={!isFollowing ? handleFollow : handleUnfollow}
+          className="flex-1 min-w-[100px] cursor-pointer rounded-md flex justify-center items-center gap-1 text-white text-[8px] xs:text-[9px] sm:text-sm font-medium transition bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 py-2 xs:py-1.5 sm:py-2"
         >
           {isFollowing ? (
             <>
-              <UserCheck
-                className="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5 flex-shrink-0"
-                aria-hidden="true"
-              />
+              <UserCheck className="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span className="text-[10px] xs:text-xs sm:text-sm whitespace-nowrap truncate">
                 Following
               </span>
             </>
           ) : (
             <>
-              <UserPlus
-                className="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5 flex-shrink-0"
-                aria-hidden="true"
-              />
+              <UserPlus className="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span className="text-[10px] xs:text-xs sm:text-sm whitespace-nowrap truncate">
                 Follow
               </span>
@@ -135,35 +156,23 @@ const UserCard = ({ user }) => {
         <button
           onClick={handleConnectionRequest}
           className={`flex-1 min-w-[100px] px-3 py-2 xs:py-1.5 sm:py-2 cursor-pointer rounded-md flex items-center justify-center gap-1 sm:gap-2 h-auto sm:h-10 transition group ${
-            currentUser.connections.includes(user._id)
+            isConnected
               ? "border border-green-400 text-green-600 hover:border-green-500 hover:text-green-700"
               : "border border-slate-300 text-slate-600 hover:border-indigo-500 hover:text-indigo-600"
           }`}
-          title={
-            currentUser.connections.includes(user._id)
-              ? "Send Message"
-              : "Send Connection Request"
-          }
-          aria-label={
-            currentUser.connections.includes(user._id) ? "Message" : "Connect"
-          }
+          title={isConnected ? "Send Message" : "Send Connection Request"}
+          aria-label={isConnected ? "Message" : "Connect"}
         >
-          {currentUser.connections.includes(user._id) ? (
+          {isConnected ? (
             <>
-              <MessageCircle
-                className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform flex-shrink-0"
-                aria-hidden="true"
-              />
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform flex-shrink-0" />
               <span className="text-[10px] xs:text-xs sm:text-sm whitespace-nowrap leading-none">
                 Message
               </span>
             </>
           ) : (
             <>
-              <PlusCircle
-                className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform flex-shrink-0"
-                aria-hidden="true"
-              />
+              <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform flex-shrink-0" />
               <span className="text-[10px] xs:text-xs sm:text-sm whitespace-nowrap truncate leading-none">
                 Add Connection
               </span>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Search } from "lucide-react";
 import UserCard from "../components/UserCard";
 import Loading from "../components/Loading";
@@ -10,7 +10,6 @@ const Discover = () => {
   const [input, setInput] = useState("");
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-
   const { getToken } = useAuth();
 
   const handleSearch = async (e) => {
@@ -22,17 +21,10 @@ const Discover = () => {
         const { data } = await api.post(
           "/api/user/discover",
           { input },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        if (data.success) {
-          setUsers(data.users);
-        } else {
-          toast.error(data.message || "Failed to fetch users");
-        }
+        if (data.success) setUsers(data.users);
+        else toast.error(data.message || "Failed to fetch users");
       } catch (error) {
         toast.error(error.message || "Something went wrong");
       } finally {
@@ -40,6 +32,20 @@ const Discover = () => {
       }
     }
   };
+
+  // Memoize users grid to avoid unnecessary re-renders
+  const usersGrid = useMemo(() => {
+    if (users.length === 0 && input.trim() !== "" && !loading) {
+      return (
+        <p className="text-center text-gray-500 col-span-full">
+          No users found matching "{input}"
+        </p>
+      );
+    }
+    return users.map((user) => (
+      <UserCard key={user._id} user={user} loading="lazy" />
+    ));
+  }, [users, input, loading]);
 
   return (
     <div className="h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col">
@@ -74,14 +80,7 @@ const Discover = () => {
           <Loading height="60vh" />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {users.map((user) => (
-              <UserCard key={user._id} user={user} />
-            ))}
-            {users.length === 0 && input.trim() !== "" && !loading && (
-              <p className="text-center text-gray-500 col-span-full">
-                No users found matching "{input}"
-              </p>
-            )}
+            {usersGrid}
           </div>
         )}
       </div>

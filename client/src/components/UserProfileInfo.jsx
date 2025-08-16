@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Calendar,
   MapPin,
@@ -21,9 +21,18 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
   const navigate = useNavigate();
   const currentUser = useSelector((state) => state.user.value);
 
-  const isOwnProfile = !profileId || currentUser._id === profileId;
+  const isOwnProfile = useMemo(
+    () => !profileId || currentUser._id === profileId,
+    [profileId, currentUser._id]
+  );
+
   const [isFollowing, setIsFollowing] = useState(
     currentUser?.following?.includes(user._id) || false
+  );
+
+  const isConnected = useMemo(
+    () => currentUser.connections?.includes(user._id),
+    [currentUser.connections, user._id]
   );
 
   const handleFollow = async () => {
@@ -38,7 +47,9 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
         toast.success(data.message);
         setIsFollowing(true);
         dispatch(fetchConnections(token));
-      } else toast.error(data.message);
+      } else {
+        toast.error(data.message);
+      }
     } catch (error) {
       toast.error(error.message);
     }
@@ -56,14 +67,16 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
         toast.success(data.message);
         setIsFollowing(false);
         dispatch(fetchConnections(token));
-      } else toast.error(data.message);
+      } else {
+        toast.error(data.message);
+      }
     } catch (error) {
       toast.error(error.message);
     }
   };
 
   const handleConnectionRequest = async () => {
-    if (currentUser.connections?.includes(user._id)) {
+    if (isConnected) {
       navigate(`/messages/${user._id}`);
       return;
     }
@@ -77,7 +90,9 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
       if (data.success) {
         toast.success(data.message);
         dispatch(fetchConnections(token));
-      } else toast.error(data.message);
+      } else {
+        toast.error(data.message);
+      }
     } catch (error) {
       toast.error(error.message);
     }
@@ -98,7 +113,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
 
         <div className="flex flex-col bp-411:flex-row items-center bp-411:items-start gap-6">
           <div className="flex-shrink-0 w-32 h-32 rounded-full overflow-hidden border-4 border-white -mt-24 md:-mt-26 relative z-10">
-            {user && (
+            {user?.profile_picture && (
               <img
                 src={user.profile_picture}
                 alt={user.full_name || "User"}
@@ -187,12 +202,12 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
                 <button
                   onClick={handleConnectionRequest}
                   className={`flex items-center justify-center gap-2 w-full bp-411:w-44 px-4 py-2 rounded-md font-medium border transition text-xs sm:text-sm ${
-                    currentUser.connections?.includes(user._id)
+                    isConnected
                       ? "border-green-400 text-green-600 hover:border-green-500 hover:text-green-700"
                       : "border-slate-300 text-slate-600 hover:border-indigo-500 hover:text-indigo-600"
                   }`}
                 >
-                  {currentUser.connections?.includes(user._id) ? (
+                  {isConnected ? (
                     <>
                       <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                       <span className="leading-none">Message</span>

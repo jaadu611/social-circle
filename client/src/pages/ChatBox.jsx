@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useContext } from "react";
+import React, { useEffect, useRef, useState, useContext, useMemo } from "react";
 import { Image, Send } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -24,9 +24,14 @@ const ChatBox = () => {
 
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
-  const [chatUser, setChatUser] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const messagesEndRef = useRef(null);
+
+  // Memoized chat user
+  const chatUser = useMemo(
+    () => connections.find((c) => c._id === userId) || null,
+    [connections, userId]
+  );
 
   const isChatUserOnline = chatUser && onlineUsers.includes(chatUser._id);
 
@@ -35,9 +40,7 @@ const ChatBox = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  useEffect(scrollToBottom, [messages]);
 
   // Fetch chat messages
   useEffect(() => {
@@ -65,13 +68,9 @@ const ChatBox = () => {
   // Track online users
   useEffect(() => {
     if (!socket) return;
-
-    socket.on("onlineUsers", (users) => {
-      console.log("Online users:", users);
-      setOnlineUsers(users);
-    });
-
-    return () => socket.off("onlineUsers");
+    const handleOnlineUsers = (users) => setOnlineUsers(users);
+    socket.on("onlineUsers", handleOnlineUsers);
+    return () => socket.off("onlineUsers", handleOnlineUsers);
   }, [socket]);
 
   // Send message
@@ -101,25 +100,13 @@ const ChatBox = () => {
     }
   };
 
-  // Get chat user info
-  useEffect(() => {
-    if (connections.length > 0) {
-      const foundUser = connections.find((c) => c._id === userId);
-      setChatUser(foundUser);
-    }
-  }, [connections, userId]);
-
   // Socket listeners
   useEffect(() => {
-    if (!socket) return;
-
+    if (!socket || !currentUser) return;
     socket.emit("join", currentUser.id);
 
-    const handleReceiveMessage = (message) => {
-      dispatch(addMessages(message));
-    };
-
-    const handleUpdateSeen = ({ messageIds }) => {
+    const handleReceiveMessage = (message) => dispatch(addMessages(message));
+    const handleUpdateSeen = ({ messageIds }) =>
       dispatch(
         setMessages(
           messages.map((msg) =>
@@ -127,7 +114,6 @@ const ChatBox = () => {
           )
         )
       );
-    };
 
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("updateSeen", handleUpdateSeen);
@@ -136,23 +122,35 @@ const ChatBox = () => {
       socket.off("receiveMessage", handleReceiveMessage);
       socket.off("updateSeen", handleUpdateSeen);
     };
-  }, [socket, dispatch, messages, currentUser.id]);
+  }, [socket, dispatch, messages, currentUser]);
 
-  // Mark messages as seen when they appear in viewport
+  // Mark messages as seen
   useEffect(() => {
     if (!socket || !chatUser) return;
-
     const unseenMessages = messages.filter(
       (msg) => !msg.seen && msg.from_user_id === chatUser._id
     );
-
     if (unseenMessages.length > 0) {
       socket.emit("markSeen", {
         from_user_id: chatUser._id,
         to_user_id: currentUser.id,
       });
     }
-  }, [messages, chatUser, currentUser.id, socket]);
+  }, [messages, chatUser, currentUser, socket]);
+
+  // Sorted & filtered messages memo
+  const sortedMessages = useMemo(
+    () =>
+      messages
+        .flat()
+        .filter(Boolean)
+        .sort(
+          (a, b) =>
+            new Date(a.createdAt || Date.now()) -
+            new Date(b.createdAt || Date.now())
+        ),
+    [messages]
+  );
 
   if (!isLoaded || !currentUser || !chatUser) return <Loading />;
 
@@ -160,13 +158,11 @@ const ChatBox = () => {
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
       <div className="flex items-center gap-4 px-5 py-4 bg-white border-b border-gray-300 sticky top-0 z-10">
-        {chatUser && (
-          <img
-            src={chatUser.profile_picture}
-            alt="User Avatar"
-            className="h-11 w-11 rounded-full border-2 border-indigo-500"
-          />
-        )}
+        <img
+          src={chatUser.profile_picture}
+          alt="User Avatar"
+          className="h-11 w-11 rounded-full border-2 border-indigo-500"
+        />
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
             {chatUser.full_name}
@@ -182,60 +178,49 @@ const ChatBox = () => {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-3">
-        {messages
-          .flat()
-          .filter(Boolean)
-          .sort(
-            (a, b) =>
-              new Date(a.createdAt || Date.now()) -
-              new Date(b.createdAt || Date.now())
-          )
-          .map((message, idx) => {
-            if (!message?.from_user_id) return null;
-
-            const isSelf =
-              (message.from_user_id._id || message.from_user_id) ===
-              currentUser.id;
-
-            return (
-              <div
-                key={idx}
-                className={`flex ${
-                  isSelf ? "justify-end items-end" : "justify-start items-end"
-                }`}
-              >
-                {!isSelf && chatUser && (
-                  <img
-                    src={chatUser.profile_picture}
-                    alt="sender"
-                    className="h-8 w-8 rounded-full mr-2 mt-1 object-cover"
-                  />
-                )}
-
-                <div className="flex flex-col max-w-[70%]">
-                  <div
-                    className={`rounded-xl px-4 py-2 text-sm shadow break-words ${
-                      isSelf
-                        ? "bg-gradient-to-tr from-indigo-500 via-blue-500 to-purple-600 text-white rounded-br-none"
-                        : "bg-white text-gray-800 rounded-bl-none"
-                    }`}
-                  >
-                    {message.message_type === "image" && message.media_url && (
-                      <img
-                        src={message.media_url}
-                        alt="uploaded"
-                        className="w-full max-h-60 object-cover rounded-lg my-2"
-                      />
-                    )}
-                    {message.text && <p>{message.text}</p>}
-                    {isSelf && message.seen && (
-                      <span className="text-xs text-gray-400 mt-1">Seen</span>
-                    )}
-                  </div>
+        {sortedMessages.map((message, idx) => {
+          if (!message?.from_user_id) return null;
+          const isSelf =
+            (message.from_user_id._id || message.from_user_id) ===
+            currentUser.id;
+          return (
+            <div
+              key={idx}
+              className={`flex ${
+                isSelf ? "justify-end items-end" : "justify-start items-end"
+              }`}
+            >
+              {!isSelf && (
+                <img
+                  src={chatUser.profile_picture}
+                  alt="sender"
+                  className="h-8 w-8 rounded-full mr-2 mt-1 object-cover"
+                />
+              )}
+              <div className="flex flex-col max-w-[70%]">
+                <div
+                  className={`rounded-xl px-4 py-2 text-sm shadow break-words ${
+                    isSelf
+                      ? "bg-gradient-to-tr from-indigo-500 via-blue-500 to-purple-600 text-white rounded-br-none"
+                      : "bg-white text-gray-800 rounded-bl-none"
+                  }`}
+                >
+                  {message.message_type === "image" && message.media_url && (
+                    <img
+                      src={message.media_url}
+                      alt="uploaded"
+                      className="w-full max-h-60 object-cover rounded-lg my-2"
+                    />
+                  )}
+                  {message.text && <p>{message.text}</p>}
+                  {isSelf && message.seen && (
+                    <span className="text-xs text-gray-400 mt-1">Seen</span>
+                  )}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
 

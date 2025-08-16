@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Loading from "../components/Loading";
 import UserProfileInfo from "../components/UserProfileInfo";
 import PostCard from "../components/PostCard";
@@ -9,33 +9,47 @@ import ProfileModel from "../components/ProfileModel";
 import api from "../api/axios";
 import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
+import { fetchConnections } from "../features/connectionSlice";
 
 const Profile = () => {
+  const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.user.value);
-
   const { getToken } = useAuth();
   const { profileId } = useParams();
+
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("Posts");
   const [showEdit, setShowEdit] = useState(false);
 
   const fetchUser = async (profileId) => {
-    const token = await getToken();
     try {
+      const token = await getToken();
       const { data } = await api.post(
         `/api/user/profiles`,
         { profileId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (data.success) {
-        setUser(data.profile);
-        setPosts(data.posts);
+        // Optimize cover photo & post images with ImageKit
+        const optimizedPosts = data.posts.map((post) => ({
+          ...post,
+          image_urls: post.image_urls.map((url) =>
+            url.replace("/tr:q-100:f-webp:w-1280/", "/tr:q-70:f-webp:w-400/")
+          ),
+        }));
+
+        setUser({
+          ...data.profile,
+          cover_photo: data.profile.cover_photo
+            ? data.profile.cover_photo.replace(
+                "/tr:q-100:f-webp:w-1280/",
+                "/tr:q-70:f-webp:w-600/"
+              )
+            : null,
+        });
+        setPosts(optimizedPosts);
       } else {
         toast.error(data.message);
       }
@@ -46,14 +60,15 @@ const Profile = () => {
 
   const handleUnfollow = async (userId) => {
     try {
+      const token = await getToken();
       const { data } = await api.post(
         "/api/user/unfollow",
         { id: userId },
-        { headers: { Authorization: `Bearer ${await getToken()}` } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (data.success) {
         toast.success(data.message);
-        dispatch(fetchConnections(await getToken()));
+        dispatch(fetchConnections(token));
       } else {
         toast.error(data.message);
       }
@@ -65,12 +80,30 @@ const Profile = () => {
   useEffect(() => {
     if (profileId) {
       fetchUser(profileId);
-    } else {
+    } else if (currentUser?._id) {
       fetchUser(currentUser._id);
     }
   }, [profileId, currentUser]);
 
-  return user ? (
+  // Memoize posts with images for Media tab
+  const mediaPosts = useMemo(
+    () =>
+      posts
+        .filter((post) => post.image_urls.length > 0)
+        .flatMap((post) =>
+          post.image_urls.map((image, index) => ({
+            image,
+            postId: post._id,
+            createdAt: post.createdAt,
+            index,
+          }))
+        ),
+    [posts]
+  );
+
+  if (!user) return <Loading />;
+
+  return (
     <div className="relative h-full overflow-y-scroll bg-gray-50 p-6">
       <div className="max-w-[60vw] mx-auto">
         <div className="bg-white rounded-2xl shadow overflow-hidden">
@@ -80,6 +113,9 @@ const Profile = () => {
                 src={user.cover_photo}
                 alt=""
                 className="h-full w-full object-cover"
+                loading="lazy"
+                width={600}
+                height={200}
               />
             )}
           </div>
@@ -109,11 +145,11 @@ const Profile = () => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`relative flex-1 px-4 cursor-pointer py-2 text-sm font-medium z-10 transition-colors duration-200 rounded-lg
-          ${
-            activeTab === tab
-              ? "text-white"
-              : "text-gray-600 hover:text-indigo-600"
-          }`}
+                  ${
+                    activeTab === tab
+                      ? "text-white"
+                      : "text-gray-600 hover:text-indigo-600"
+                  }`}
               >
                 {tab}
               </button>
@@ -130,35 +166,33 @@ const Profile = () => {
 
           {activeTab === "Media" && (
             <div className="grid custom-cols-connections gap-2 mt-4 mx-auto">
-              {posts
-                .filter((post) => post.image_urls.length > 0)
-                .flatMap((post) =>
-                  post.image_urls.map((image, index) => (
-                    <Link
-                      target="_blank"
-                      to={image}
-                      key={`${post._id}-${index}`}
-                      className="relative group w-full"
-                    >
-                      <img
-                        src={image}
-                        alt=""
-                        className="w-full h-48 sm:h-56 md:h-64 lg:h-72 object-cover rounded-md"
-                      />
-                      <p className="absolute bottom-0 right-0 text-xs p-1 px-3 backdrop-blur-xl text-white opacity-0 group-hover:opacity-100 transition duration-300">
-                        Posted {moment(post.createdAt).fromNow()}
-                      </p>
-                    </Link>
-                  ))
-                )}
+              {mediaPosts.map(({ image, postId, createdAt, index }) => (
+                <Link
+                  target="_blank"
+                  to={image}
+                  key={`${postId}-${index}`}
+                  className="relative group w-full"
+                >
+                  <img
+                    src={image}
+                    alt=""
+                    className="w-full h-48 sm:h-56 md:h-64 lg:h-72 object-cover rounded-md"
+                    loading="lazy"
+                    width={400}
+                    height={300}
+                  />
+                  <p className="absolute bottom-0 right-0 text-xs p-1 px-3 backdrop-blur-xl text-white opacity-0 group-hover:opacity-100 transition duration-300">
+                    Posted {moment(createdAt).fromNow()}
+                  </p>
+                </Link>
+              ))}
             </div>
           )}
         </div>
       </div>
-      <div>{showEdit && <ProfileModel setShowEdit={setShowEdit} />}</div>
+
+      {showEdit && <ProfileModel setShowEdit={setShowEdit} />}
     </div>
-  ) : (
-    <Loading />
   );
 };
 

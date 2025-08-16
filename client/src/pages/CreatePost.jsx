@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Image, X, Loader } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
@@ -14,7 +14,14 @@ const CreatePost = () => {
   const user = useSelector((state) => state.user.value);
   const { getToken } = useAuth();
 
-  const handleSubmit = async () => {
+  // Cleanup object URLs to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      images.forEach((img) => URL.revokeObjectURL(img));
+    };
+  }, [images]);
+
+  const handleSubmit = useCallback(async () => {
     if (!images.length && !content) {
       return toast.error("Please add at least one image or text");
     }
@@ -27,34 +34,25 @@ const CreatePost = () => {
         ? "image"
         : "text";
 
-    const token = await getToken();
-
     try {
-      let formData = new FormData();
+      const token = await getToken();
+      const formData = new FormData();
       formData.append("content", content);
       formData.append("post_type", post_type);
-
-      images.forEach((image) => {
-        formData.append("images", image);
-      });
+      images.forEach((image) => formData.append("images", image));
 
       const { data } = await api.post("/api/post/add", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (data.success) {
-        navigate("/");
-      } else {
-        throw new Error(data.message);
-      }
+      if (data.success) navigate("/");
+      else throw new Error(data.message);
     } catch (error) {
       toast.error(error.message || "Failed to add post");
     } finally {
       setLoading(false);
     }
-  };
+  }, [content, images, getToken, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-slate-100 py-10 px-4">
@@ -67,7 +65,6 @@ const CreatePost = () => {
               className="w-14 h-14 rounded-full border border-gray-300 object-cover"
             />
           )}
-
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
               {user.full_name}
@@ -139,7 +136,7 @@ const CreatePost = () => {
           <button
             onClick={() =>
               toast.promise(handleSubmit(), {
-                loading: "uploading...",
+                loading: "Uploading...",
                 success: <p>Post Added</p>,
                 error: <p>Post Not Added</p>,
               })

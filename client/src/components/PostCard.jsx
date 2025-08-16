@@ -112,15 +112,16 @@ const PostCard = ({ post, activeLink = true }) => {
 
       {/* Image Carousel */}
       {Array.isArray(post.image_urls) && post.image_urls.length > 0 && (
-        <div className="relative w-full overflow-hidden rounded-lg">
+        <div className="relative w-full overflow-hidden rounded-lg h-[250px] sm:h-[300px] md:h-[350px]">
           <AnimatePresence mode="wait">
-            {loading && <Loading height="100px" />}
+            {loading && <Loading height="100%" />}
 
             <motion.img
               key={currentIndex}
               src={post.image_urls[currentIndex]}
               alt={`post-${currentIndex}`}
-              className="w-full max-w-[300px] h-auto mx-auto block object-cover rounded-lg shadow-sm object-center"
+              loading="lazy"
+              className="w-full h-full object-cover rounded-lg shadow-sm object-center"
               initial={{ x: 100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -100, opacity: 0 }}
@@ -137,7 +138,7 @@ const PostCard = ({ post, activeLink = true }) => {
                 onClick={prevImage}
                 className="absolute top-1/2 left-3 -translate-y-1/2 bg-black/50 cursor-pointer text-white p-2 rounded-full hover:bg-black/70 transition"
               >
-                <ChevronLeftIcon className="relative left-0" />
+                <ChevronLeftIcon />
               </button>
               <button
                 type="button"
