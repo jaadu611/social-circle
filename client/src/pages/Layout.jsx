@@ -14,7 +14,7 @@ const Layout = () => {
     <div className="w-full h-screen flex relative">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      <div className="flex-1 bg-slate-50 overflow-y-auto">
+      <div className="flex-1 bg-slate-50 overflow-y-auto custom-scrollbar">
         <Outlet />
       </div>
 

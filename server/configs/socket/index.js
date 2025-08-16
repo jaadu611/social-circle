@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { socketHandlers } from "./messageHandlers.js";
+import { socketHandlers } from "./userHandler.js";
 
 let ioInstance;
 

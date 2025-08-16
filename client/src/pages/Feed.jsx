@@ -38,7 +38,7 @@ const Feed = () => {
   }, []);
 
   return !loading ? (
-    <div className="overflow-y-scroll no-scrollbar p-4 flex justify-center xl:justify-between gap-4 max-w-7xl mx-auto">
+    <div className="p-4 flex justify-center xl:justify-between gap-4 max-w-7xl mx-auto">
       <div className="flex-1 w-full">
         <StoriesBar />
         <div className="space-y-6">

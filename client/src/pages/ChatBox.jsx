@@ -25,7 +25,10 @@ const ChatBox = () => {
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
   const [chatUser, setChatUser] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const messagesEndRef = useRef(null);
+
+  const isChatUserOnline = chatUser && onlineUsers.includes(chatUser._id);
 
   // Scroll to bottom
   const scrollToBottom = () => {
@@ -58,6 +61,18 @@ const ChatBox = () => {
     };
     fetchMessages();
   }, [userId, isLoaded, getToken, dispatch]);
+
+  // Track online users
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("onlineUsers", (users) => {
+      console.log("Online users:", users);
+      setOnlineUsers(users);
+    });
+
+    return () => socket.off("onlineUsers");
+  }, [socket]);
 
   // Send message
   const sendMessage = async () => {
@@ -94,18 +109,50 @@ const ChatBox = () => {
     }
   }, [connections, userId]);
 
-  // Socket listener for incoming messages
+  // Socket listeners
   useEffect(() => {
     if (!socket) return;
+
     socket.emit("join", currentUser.id);
 
     const handleReceiveMessage = (message) => {
       dispatch(addMessages(message));
     };
 
+    const handleUpdateSeen = ({ messageIds }) => {
+      dispatch(
+        setMessages(
+          messages.map((msg) =>
+            messageIds.includes(msg._id) ? { ...msg, seen: true } : msg
+          )
+        )
+      );
+    };
+
     socket.on("receiveMessage", handleReceiveMessage);
-    return () => socket.off("receiveMessage", handleReceiveMessage);
-  }, [socket, currentUser.id, dispatch]);
+    socket.on("updateSeen", handleUpdateSeen);
+
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("updateSeen", handleUpdateSeen);
+    };
+  }, [socket, dispatch, messages, currentUser.id]);
+
+  // Mark messages as seen when they appear in viewport
+  useEffect(() => {
+    if (!socket || !chatUser) return;
+
+    const unseenMessages = messages.filter(
+      (msg) => !msg.seen && msg.from_user_id === chatUser._id
+    );
+
+    if (unseenMessages.length > 0) {
+      socket.emit("markSeen", {
+        from_user_id: chatUser._id,
+        to_user_id: currentUser.id,
+      });
+    }
+  }, [messages, chatUser, currentUser.id, socket]);
 
   if (!isLoaded || !currentUser || !chatUser) return <Loading />;
 
@@ -121,7 +168,14 @@ const ChatBox = () => {
           />
         )}
         <div>
-          <h2 className="text-lg font-semibold">{chatUser.full_name}</h2>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            {chatUser.full_name}
+            <span
+              className={`h-2 w-2 rounded-full inline-block ${
+                isChatUserOnline ? "bg-green-500" : "bg-gray-400"
+              }`}
+            />
+          </h2>
           <p className="text-sm text-gray-500">@{chatUser.username}</p>
         </div>
       </div>
@@ -174,6 +228,9 @@ const ChatBox = () => {
                       />
                     )}
                     {message.text && <p>{message.text}</p>}
+                    {isSelf && message.seen && (
+                      <span className="text-xs text-gray-400 mt-1">Seen</span>
+                    )}
                   </div>
                 </div>
               </div>

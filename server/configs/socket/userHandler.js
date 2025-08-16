@@ -1,15 +1,19 @@
 import Message from "../../models/message.model.js";
 
+let onlineUsers = {};
+
 export const socketHandlers = (io, socket) => {
-  // Join a user room
   socket.on("join", (userId) => {
     socket.join(userId);
+
+    onlineUsers[userId] = socket.id;
+
+    io.emit("onlineUsers", Object.keys(onlineUsers));
   });
 
   // Send a message
   socket.on("sendMessage", async (message) => {
     if (!message || !message.from_user_id || !message.to_user_id) {
-      console.warn("Received invalid message:", message);
       return;
     }
 
@@ -24,6 +28,7 @@ export const socketHandlers = (io, socket) => {
           ? message.from_user_id._id
           : message.from_user_id;
 
+      // Emit message to both sender and receiver
       io.to(receiverId).emit("receiveMessage", message);
       io.to(senderId).emit("receiveMessage", message);
     } catch (err) {
@@ -44,6 +49,24 @@ export const socketHandlers = (io, socket) => {
       io.to(from_user_id).emit("updateSeen", { messageIds });
     } catch (err) {
       console.error("Error marking messages as seen:", err);
+    }
+  });
+
+  // Handle disconnect
+  socket.on("disconnect", () => {
+    // Find which user disconnected
+    let disconnectedUserId = null;
+    for (const [userId, id] of Object.entries(onlineUsers)) {
+      if (id === socket.id) {
+        disconnectedUserId = userId;
+        delete onlineUsers[userId];
+        break;
+      }
+    }
+    if (disconnectedUserId) {
+      console.log("User disconnected:", disconnectedUserId);
+      // Broadcast updated online users
+      io.emit("onlineUsers", Object.keys(onlineUsers));
     }
   });
 };
