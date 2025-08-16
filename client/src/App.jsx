@@ -55,7 +55,7 @@ const App = () => {
   const socketValue = useMemo(() => socketRef.current, [socketRef.current]);
 
   // Conditional rendering after hooks
-  if (false) {
+  if (!authLoaded || !userLoaded || loading) {
     return <Loading />;
   }
 
