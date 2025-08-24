@@ -1,10 +1,10 @@
 import React from "react";
-import { assets } from "../assets/assets";
 import { Link } from "react-router-dom";
 import MenuItems from "./MenuItems";
 import { CirclePlus, LogOut } from "lucide-react";
 import { useClerk, UserButton } from "@clerk/clerk-react";
 import { useSelector } from "react-redux";
+import logo from "../assets/logo.svg";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const user = useSelector((state) => state.user?.value);
@@ -22,7 +22,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       <div className="w-full">
         <Link to="/" className="block px-6 py-3">
           <img
-            src={assets.logo}
+            src={logo}
             className="h-8 sm:h-9 md:h-10 w-auto cursor-pointer"
             alt="logo"
           />

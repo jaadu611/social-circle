@@ -1,22 +1,24 @@
 import {
   ChevronLeftIcon,
   ChevronRight,
+  ChevronRightIcon,
   Heart,
   MessageCircle,
   Share2,
+  Trash2,
 } from "lucide-react";
 import moment from "moment";
 import DOMPurify from "dompurify";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
 import { toast } from "react-hot-toast";
 import Loading from "./Loading.jsx";
 
-const PostCard = ({ post, activeLink = true }) => {
+const PostCard = ({ post, activeLink = true, onDelete }) => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likes, setLikes] = useState(post.likes_count || []);
@@ -48,9 +50,7 @@ const PostCard = ({ post, activeLink = true }) => {
       const { data } = await api.post(
         `/api/post/like/${post._id}`,
         {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (data.success) {
         setLikes((prev) => {
@@ -66,6 +66,49 @@ const PostCard = ({ post, activeLink = true }) => {
     }
   };
 
+  const handleShare = async () => {
+    const postUrl = `${window.location.origin}/post/${post._id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Check out this post by ${post.user.full_name}`,
+          text: post.content?.slice(0, 100) || "",
+          url: postUrl,
+        });
+      } catch (err) {
+        toast.error("Sharing cancelled or failed");
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(postUrl);
+        toast.success("Post URL copied to clipboard!");
+      } catch (err) {
+        toast.error("Failed to copy URL");
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+
+    try {
+      const token = await getToken();
+      const { data } = await api.delete(`/api/post/${post._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (data.success) {
+        toast.success("Post deleted successfully!");
+        if (onDelete) onDelete(post._id);
+      } else {
+        toast.error(data.message || "Failed to delete post");
+      }
+    } catch (err) {
+      toast.error(err.message || "Something went wrong");
+    }
+  };
+
   return (
     <motion.div
       layout
@@ -77,26 +120,28 @@ const PostCard = ({ post, activeLink = true }) => {
       style={{ willChange: "transform" }}
     >
       {/* User Header */}
-      <div
-        onClick={
-          activeLink ? () => navigate(`/profile/${post.user._id}`) : undefined
-        }
-        className="inline-flex group items-center gap-3 cursor-pointer"
-      >
-        {post.user && (
-          <img
-            src={post.user.profile_picture}
-            alt={post.user.full_name}
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-md transition-all duration-300 group-hover:ring-2 group-hover:ring-offset-2 group-hover:ring-indigo-500 object-cover"
-          />
-        )}
-        <div className="flex flex-col justify-center text-sm sm:text-base">
-          <span className="relative w-fit text-gray-700 font-semibold transition-colors duration-200 group-hover:text-indigo-600 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[1.5px] after:bg-indigo-500 after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left">
-            {post.user.full_name}
-          </span>
-          <span className="text-gray-500 text-xs sm:text-sm">
-            @{post.user.username} • {moment(post.createdAt).fromNow()}
-          </span>
+      <div className="flex justify-between items-center">
+        <div
+          onClick={
+            activeLink ? () => navigate(`/profile/${post.user._id}`) : undefined
+          }
+          className="inline-flex group items-center gap-3 cursor-pointer"
+        >
+          {post.user && (
+            <img
+              src={post.user.profile_picture}
+              alt={post.user.full_name}
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-md transition-all duration-300 group-hover:ring-2 group-hover:ring-offset-2 group-hover:ring-indigo-500 object-cover"
+            />
+          )}
+          <div className="flex flex-col justify-center text-sm sm:text-base">
+            <span className="relative w-fit text-gray-700 font-semibold transition-colors duration-200 group-hover:text-indigo-600 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[1.5px] after:bg-indigo-500 after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left">
+              {post.user.full_name}
+            </span>
+            <span className="text-gray-500 text-xs sm:text-sm">
+              @{post.user.username} • {moment(post.createdAt).fromNow()}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -114,7 +159,6 @@ const PostCard = ({ post, activeLink = true }) => {
       {Array.isArray(post.image_urls) && post.image_urls.length > 0 && (
         <div className="relative w-full overflow-hidden rounded-lg h-[250px] sm:h-[300px] md:h-[350px]">
           {loading && <Loading height="100%" />}
-
           <motion.img
             key={currentIndex}
             src={post.image_urls[currentIndex]}
@@ -128,7 +172,6 @@ const PostCard = ({ post, activeLink = true }) => {
             onLoad={() => setLoading(false)}
             onError={() => setLoading(false)}
           />
-
           {post.image_urls.length > 1 && (
             <>
               <button
@@ -143,7 +186,7 @@ const PostCard = ({ post, activeLink = true }) => {
                 onClick={nextImage}
                 className="absolute top-1/2 right-3 -translate-y-1/2 bg-black/50 cursor-pointer text-white p-2 rounded-full hover:bg-black/70 transition"
               >
-                <ChevronRight />
+                <ChevronRightIcon />
               </button>
               <div className="absolute bottom-3 w-full flex justify-center gap-2">
                 {post.image_urls.map((_, idx) => (
@@ -164,28 +207,42 @@ const PostCard = ({ post, activeLink = true }) => {
       )}
 
       {/* Post Actions */}
-      <div className="flex flex-wrap items-center gap-5 text-gray-600 text-sm pt-5 border-t border-gray-200">
-        <div className="flex items-center gap-1">
-          <Heart
-            onClick={handleLike}
-            className={`w-5 h-5 cursor-pointer transition-colors duration-200 ${
-              likes.includes(currentUser?._id)
-                ? "text-red-500 fill-red-500"
-                : "hover:text-red-500"
-            }`}
-          />
-          <span className="w-2 text-center">{likes.length}</span>
-        </div>
+      <div className="flex items-center justify-between border-t border-gray-200">
+        <div className="flex flex-wrap items-center gap-5 text-gray-600 text-sm pt-5">
+          <div className="flex items-center gap-1">
+            <Heart
+              onClick={handleLike}
+              className={`w-5 h-5 cursor-pointer transition-colors duration-200 ${
+                likes.includes(currentUser?._id)
+                  ? "text-red-500 fill-red-500"
+                  : "hover:text-red-500"
+              }`}
+            />
+            <span className="w-2 text-center">{likes.length}</span>
+          </div>
 
-        <div className="flex items-center gap-1">
-          <MessageCircle className="w-5 h-5 cursor-pointer hover:text-indigo-500 transition" />
-          <span className="w-2 text-center">{post.comments_count || 0}</span>
-        </div>
+          <div className="flex items-center gap-1">
+            <MessageCircle className="w-5 h-5 cursor-pointer hover:text-indigo-500 transition" />
+            <span className="w-2 text-center">{post.comments_count || 0}</span>
+          </div>
 
-        <div className="flex items-center gap-1">
-          <Share2 className="w-5 h-5 cursor-pointer hover:text-indigo-500 transition" />
-          <span className="w-2 text-center">{post.shares_count || 0}</span>
+          <div className="flex items-center gap-1">
+            <Share2
+              onClick={handleShare}
+              className="w-5 h-5 cursor-pointer hover:text-indigo-500 transition"
+            />
+            <span className="w-2 text-center">{post.shares_count || 0}</span>
+          </div>
         </div>
+        {currentUser?._id === post.user._id && (
+          <button
+            onClick={handleDelete}
+            className="p-1 hover:bg-red-100 rounded-full transition mt-5 cursor-pointer"
+            title="Delete post"
+          >
+            <Trash2 className="w-5 h-5 text-red-500" />
+          </button>
+        )}
       </div>
     </motion.div>
   );

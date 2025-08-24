@@ -3,7 +3,6 @@ import { inngest } from "../inngest/index.js";
 import Connection from "../models/connection.model.js";
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
-import fs from "fs";
 
 export const getUserData = async (req, res) => {
   try {
@@ -82,20 +81,18 @@ export const discoverUsers = async (req, res) => {
     const { userId } = req.auth();
     const { input } = req.body;
 
-    const allUsers = await User.find({
-      $or: [
-        { username: new RegExp(input, "i") },
-        { email: new RegExp(input, "i") },
-        { full_name: new RegExp(input, "i") },
-        { location: new RegExp(input, "i") },
-      ],
+    if (!input || input.trim() === "") {
+      return res.status(200).json({ success: true, users: [] });
+    }
+
+    const matchingUsers = await User.find({
+      _id: { $ne: userId },
+      full_name: { $regex: `^${input}`, $options: "i" },
     });
 
-    const filteredUsers = allUsers.filter(
-      (user) => user._id.toString() !== userId
-    );
-    res.status(200).json({ success: true, users: filteredUsers });
+    res.status(200).json({ success: true, users: matchingUsers });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
@@ -227,6 +224,13 @@ export const getConnections = async (req, res) => {
       .populate("connections")
       .populate("followers")
       .populate("following");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found in database",
+      });
+    }
 
     const pendingConnections = await Connection.find({
       to_user_id: userId,

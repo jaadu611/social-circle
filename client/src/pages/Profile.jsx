@@ -58,25 +58,6 @@ const Profile = () => {
     }
   };
 
-  const handleUnfollow = async (userId) => {
-    try {
-      const token = await getToken();
-      const { data } = await api.post(
-        "/api/user/unfollow",
-        { id: userId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (data.success) {
-        toast.success(data.message);
-        dispatch(fetchConnections(token));
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
   useEffect(() => {
     if (profileId) {
       fetchUser(profileId);
@@ -129,9 +110,9 @@ const Profile = () => {
         </div>
 
         <div className="mt-6">
-          <div className="relative bg-white rounded-xl shadow p-1 flex max-w-md mx-auto overflow-hidden">
+          <div className="relative bg-white rounded-xl shadow p-1 flex max-w-sm mx-auto overflow-hidden">
             <div
-              className={`absolute top-1 left-0 h-[calc(100%-0.5rem)] w-1/3 bg-indigo-600 rounded-lg transition-all duration-300 ease-in-out transform ${
+              className={`absolute top-1 left-0 h-[calc(100%-0.5rem)] w-1/2 bg-indigo-600 rounded-lg transition-all duration-300 ease-in-out transform ${
                 activeTab === "Posts"
                   ? "translate-x-1"
                   : activeTab === "Media"
@@ -140,7 +121,7 @@ const Profile = () => {
               }`}
             />
 
-            {["Posts", "Media", "Likes"].map((tab) => (
+            {["Posts", "Media"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -165,27 +146,33 @@ const Profile = () => {
           )}
 
           {activeTab === "Media" && (
-            <div className="grid custom-cols-connections gap-2 mt-4 mx-auto">
-              {mediaPosts.map(({ image, postId, createdAt, index }) => (
-                <Link
-                  target="_blank"
-                  to={image}
-                  key={`${postId}-${index}`}
-                  className="relative group w-full"
-                >
-                  <img
-                    src={image}
-                    alt=""
-                    className="w-full h-48 sm:h-56 md:h-64 lg:h-72 object-cover rounded-md"
-                    loading="lazy"
-                    width={400}
-                    height={300}
-                  />
-                  <p className="absolute bottom-0 right-0 text-xs p-1 px-3 backdrop-blur-xl text-white opacity-0 group-hover:opacity-100 transition duration-300">
-                    Posted {moment(createdAt).fromNow()}
-                  </p>
-                </Link>
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-4 mx-auto">
+              {mediaPosts.length > 0 ? (
+                mediaPosts.map(({ image, postId, createdAt }, index) => (
+                  <Link
+                    target="_blank"
+                    to={image}
+                    key={`${postId}-${index}`}
+                    className="relative group w-full"
+                  >
+                    <img
+                      src={image}
+                      alt=""
+                      className="w-full h-48 sm:h-56 md:h-64 lg:h-72 object-cover rounded-md"
+                      loading="lazy"
+                      width={400}
+                      height={300}
+                    />
+                    <p className="absolute bottom-0 right-0 text-xs p-1 px-3 backdrop-blur-xl text-white opacity-0 group-hover:opacity-100 transition duration-300">
+                      Posted {moment(createdAt).fromNow()}
+                    </p>
+                  </Link>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center col-span-full">
+                  No media yet
+                </p>
+              )}
             </div>
           )}
         </div>

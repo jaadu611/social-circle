@@ -104,7 +104,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
         {isOwnProfile && (
           <button
             onClick={() => setShowEdit(true)}
-            className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm z-10"
+            className="absolute top-4 right-4 flex items-center gap-1 cursor-pointer px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm z-10"
           >
             <PenBox className="w-4 h-4" />
             <span>Edit</span>
@@ -128,7 +128,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
                 {user.full_name}
               </h1>
               <p className="text-gray-500 text-sm sm:text-base truncate">
-                {user.username ? `@${user.username}` : "Add a username"}
+                {user.username ? `@${user.username}` : "No Username Yet"}
               </p>
 
               {user.bio && (
@@ -167,7 +167,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
               <div className="flex flex-wrap gap-4 mt-4 text-gray-500 text-sm justify-center bp-411:justify-start">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
-                  {user.location || "Add Location"}
+                  {user.location || "No Location Added Yet"}
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
@@ -180,7 +180,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
               <div className="flex flex-col items-center md:flex-row bp-411:items-end gap-3 mt-4 bp-411:mt-0">
                 <button
                   onClick={!isFollowing ? handleFollow : handleUnfollow}
-                  className={`flex items-center justify-center gap-2 w-full bp-411:w-44 px-4 py-2 rounded-md font-medium text-white transition text-xs sm:text-sm ${
+                  className={`flex items-center cursor-pointer justify-center gap-2 w-full bp-411:w-44 px-4 py-2 rounded-md font-medium text-white transition text-xs sm:text-sm ${
                     isFollowing
                       ? "bg-red-500 hover:bg-red-600"
                       : "bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
@@ -201,7 +201,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
 
                 <button
                   onClick={handleConnectionRequest}
-                  className={`flex items-center justify-center gap-2 w-full bp-411:w-44 px-4 py-2 rounded-md font-medium border transition text-xs sm:text-sm ${
+                  className={`flex items-center cursor-pointer justify-center gap-2 w-full bp-411:w-44 px-4 py-2 rounded-md font-medium border transition text-xs sm:text-sm ${
                     isConnected
                       ? "border-green-400 text-green-600 hover:border-green-500 hover:text-green-700"
                       : "border-slate-300 text-slate-600 hover:border-indigo-500 hover:text-indigo-600"

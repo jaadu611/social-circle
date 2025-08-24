@@ -1,14 +1,18 @@
 import { Star } from "lucide-react";
-import { assets } from "../assets/assets";
-import React from "react";
-import { SignIn } from "@clerk/clerk-react";
+import React, { useState } from "react";
+import { SignIn, SignUp } from "@clerk/clerk-react";
+import bgImage from "../assets/bgImage.png";
+import logo from "../assets/logo.svg";
+import group_users from "../assets/group_users.png";
 
 const Login = () => {
+  const [isSignUp, setIsSignUp] = useState(false); // toggle state
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row relative">
       {/* Background Image */}
       <img
-        src={assets.bgImage}
+        src={bgImage}
         alt="bg-image"
         className="absolute top-0 left-0 w-full h-full object-cover -z-1"
         loading="lazy"
@@ -17,17 +21,15 @@ const Login = () => {
       {/* Left Panel */}
       <div className="flex-1 flex flex-col items-start justify-between p-4 md:p-10 lg:pl-40 relative z-10">
         <img
-          src={assets.logo}
+          src={logo}
           alt="logo"
           className="h-16 object-contain"
           loading="lazy"
-          width={64}
-          height={64}
         />
 
         <div className="flex items-center gap-3 mb-4 max-md:mt-10">
           <img
-            src={assets.group_users}
+            src={group_users}
             alt="users-images"
             className="h-8 md:h-10"
             loading="lazy"
@@ -61,7 +63,47 @@ const Login = () => {
 
       {/* Right Panel */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-10 relative z-10">
-        <SignIn />
+        <div className="max-w-md bg-white h-fit w-fit rounded-xl shadow-lg p-6">
+          {isSignUp ? (
+            <SignUp
+              appearance={{
+                elements: {
+                  formButtonPrimary:
+                    "w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors",
+                  formFieldInput:
+                    "w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-400",
+                  formFieldLabel: "text-gray-700 font-medium mb-1",
+                  formErrorText: "text-red-500 mt-2 text-sm",
+                },
+              }}
+              displayConfig={{ hideClerkBranding: true }}
+            />
+          ) : (
+            <SignIn
+              appearance={{
+                elements: {
+                  formButtonPrimary:
+                    "w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors",
+                  formFieldInput:
+                    "w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400",
+                  formFieldLabel: "text-gray-700 font-medium mb-1",
+                  formErrorText: "text-red-500 mt-2 text-sm",
+                },
+              }}
+              displayConfig={{ hideClerkBranding: true }}
+            />
+          )}
+
+          <p className="text-center text-sm pb-[2rem] f">
+            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+            <button
+              className="text-blue-600 font-semibold hover:underline cursor-pointer"
+              onClick={() => setIsSignUp(!isSignUp)}
+            >
+              {isSignUp ? "Sign In" : "Sign Up"}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Search } from "lucide-react";
 import UserCard from "../components/UserCard";
 import Loading from "../components/Loading";
@@ -12,11 +12,15 @@ const Discover = () => {
   const [loading, setLoading] = useState(false);
   const { getToken } = useAuth();
 
-  const handleSearch = async (e) => {
-    if (e.key === "Enter") {
+  useEffect(() => {
+    if (!input.trim()) {
+      setUsers([]);
+      return;
+    }
+
+    const fetchUsers = async () => {
       try {
         setLoading(true);
-        setUsers([]);
         const token = await getToken();
         const { data } = await api.post(
           "/api/user/discover",
@@ -30,15 +34,17 @@ const Discover = () => {
       } finally {
         setLoading(false);
       }
-    }
-  };
+    };
 
-  // Memoize users grid to avoid unnecessary re-renders
+    fetchUsers();
+  }, [input, getToken]);
+
+  // Memoize users grid
   const usersGrid = useMemo(() => {
     if (users.length === 0 && input.trim() !== "" && !loading) {
       return (
         <p className="text-center text-gray-500 col-span-full">
-          No users found matching "{input}"
+          No users found starting with "{input}"
         </p>
       );
     }
@@ -64,11 +70,10 @@ const Discover = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search people by name, username, bio, or location..."
+                placeholder="Search people by name..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyUp={handleSearch}
               />
             </div>
           </div>
@@ -76,12 +81,22 @@ const Discover = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-6">
-        {loading ? (
-          <Loading height="60vh" />
+        {input.length > 0 ? (
+          loading ? (
+            <Loading height="60vh" />
+          ) : usersGrid.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto transition-all duration-300">
+              {usersGrid}
+            </div>
+          ) : (
+            <p className="text-center text-gray-400 text-sm sm:text-base mt-12">
+              No users found for "{input}"
+            </p>
+          )
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {usersGrid}
-          </div>
+          <p className="text-center text-gray-400 text-sm sm:text-base mt-12">
+            Start typing to search for your friends
+          </p>
         )}
       </div>
     </div>

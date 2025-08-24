@@ -73,8 +73,8 @@ const Messages = () => {
   );
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="shrink-0 px-4 py-6 sm:px-6 lg:px-8 text-center bg-white z-10">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white">
+      <div className="shrink-0 px-4 py-6 sm:px-6 lg:px-8 text-center z-10 border-b border-gray-200">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mb-1">
           Messages
         </h1>
@@ -84,14 +84,14 @@ const Messages = () => {
       </div>
 
       {connections.length > 0 ? (
-        <div className="flex-1 bg-gray-50 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex-1 bg-gradient-to-b from-slate-50 to-white overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="grid custom-cols-messages gap-5">
             {connectionCards}
           </div>
         </div>
       ) : (
-        <div className="flex flex-1 justify-center items-center h-full text-center px-4">
-          <p className="text-gray-500 text-lg sm:text-xl font-medium">
+        <div className="flex flex-1 justify-center mt-30 h-full text-center px-4 bg-transparent">
+          <p className="text-gray-400 text-sm sm:text-base md:text-lg lg:text-xl text-center">
             You haven’t added any connections yet. <br />
             Add connections to start chatting!
           </p>

@@ -120,3 +120,65 @@ export const likePost = async (req, res) => {
     });
   }
 };
+
+export const getPostById = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+    }
+
+    // Increment the share count
+    post.shares_count = (post.shares_count || 0) + 1;
+    await post.save();
+
+    // Populate user fields
+    const populatedPost = await post
+      .populate("user", "full_name username profile_picture")
+
+    res.status(200).json({ success: true, post: populatedPost.toObject() });
+  } catch (error) {
+    console.error("Error fetching post by ID:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const deletePost = async (req, res) => {
+  try {
+    const { userId } = req.auth();
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+    if (post.user.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to delete this post",
+      });
+    }
+
+    await Post.findByIdAndDelete(postId);
+
+    res.status(200).json({
+      success: true,
+      message: "Post deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};

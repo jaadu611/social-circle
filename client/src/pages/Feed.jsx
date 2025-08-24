@@ -36,7 +36,6 @@ const Feed = () => {
     fetchFeeds();
   }, []);
 
-  // Memoize post list for performance
   const feedItems = useMemo(
     () =>
       feeds.map((post, index) => (

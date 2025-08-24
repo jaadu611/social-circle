@@ -13,6 +13,7 @@ import Discover from "./pages/Discover";
 import Profile from "./pages/Profile";
 import CreatePost from "./pages/CreatePost";
 import Layout from "./pages/Layout";
+import PostPage from "./pages/PostPage";
 
 import { Toaster } from "react-hot-toast";
 import Loading from "./components/Loading";
@@ -30,7 +31,6 @@ const App = () => {
 
   const socketRef = useRef(null);
 
-  // Initialize socket after user exists
   useEffect(() => {
     if (!user || socketRef.current) return;
 
@@ -41,7 +41,6 @@ const App = () => {
     };
   }, [user]);
 
-  // Fetch user and connections
   useEffect(() => {
     if (!user) return;
 
@@ -51,10 +50,8 @@ const App = () => {
     });
   }, [user, getToken, dispatch]);
 
-  // Memoize socket context (always called, never conditionally)
   const socketValue = useMemo(() => socketRef.current, [socketRef.current]);
 
-  // Conditional rendering after hooks
   if (!authLoaded || !userLoaded || loading) {
     return <Loading />;
   }
@@ -76,6 +73,7 @@ const App = () => {
           <Route path="profile" element={<Profile />} />
           <Route path="profile/:profileId" element={<Profile />} />
           <Route path="Create-post" element={<CreatePost />} />
+          <Route path="post/:postId" element={<PostPage />} />
         </Route>
       </Routes>
     </SocketContext.Provider>
