@@ -1,12 +1,10 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Users, Search, User } from "lucide-react";
-import AnimatedHome from "./AnimatedHome";
-import AnimatedMessageCircle from "./AnimatedMessageCircle.jsx";
+import { Users, Search, User, Home, MessageCircle } from "lucide-react";
 
 const menuItemsData = [
-  { to: "/", label: "Feed", Icon: AnimatedHome },
-  { to: "/messages", label: "Messages", Icon: AnimatedMessageCircle },
+  { to: "/", label: "Feed", Icon: Home },
+  { to: "/messages", label: "Messages", Icon: MessageCircle },
   { to: "/connections", label: "Connections", Icon: Users },
   { to: "/discover", label: "Discover", Icon: Search },
   { to: "/profile", label: "Profile", Icon: User },
