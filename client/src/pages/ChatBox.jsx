@@ -25,9 +25,9 @@ const ChatBox = () => {
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [messagesLoaded, setMessagesLoaded] = useState(false); // track lazy load
   const messagesEndRef = useRef(null);
 
-  // Memoized chat user
   const chatUser = useMemo(
     () => connections.find((c) => c._id === userId) || null,
     [connections, userId]
@@ -35,14 +35,13 @@ const ChatBox = () => {
 
   const isChatUserOnline = chatUser && onlineUsers.includes(chatUser._id);
 
-  // Scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(scrollToBottom, [messages]);
 
-  // Fetch chat messages
+  // Lazy fetch chat messages after component mounts
   useEffect(() => {
     const fetchMessages = async () => {
       if (!isLoaded) return;
@@ -56,16 +55,19 @@ const ChatBox = () => {
         if (data.success) {
           dispatch(resetMessages());
           dispatch(setMessages(data.messages));
+          setMessagesLoaded(true); // mark loaded
         }
       } catch (err) {
         toast.error("Failed to fetch messages");
         console.error(err);
       }
     };
-    fetchMessages();
+    // defer fetch slightly to avoid blocking render
+    const timer = setTimeout(fetchMessages, 0);
+    return () => clearTimeout(timer);
   }, [userId, isLoaded, getToken, dispatch]);
 
-  // Track online users
+  // Track online users via socket
   useEffect(() => {
     if (!socket) return;
     const handleOnlineUsers = (users) => setOnlineUsers(users);
@@ -92,7 +94,7 @@ const ChatBox = () => {
       if (data.success) {
         setText("");
         setImage(null);
-        socket.emit("sendMessage", data.message);
+        socket?.emit("sendMessage", data.message);
       }
     } catch (err) {
       toast.error("Failed to send message");
@@ -100,9 +102,9 @@ const ChatBox = () => {
     }
   };
 
-  // Socket listeners
+  // Socket listeners: join and receive messages
   useEffect(() => {
-    if (!socket || !currentUser) return;
+    if (!socket || !currentUser || !messagesLoaded) return;
     socket.emit("join", currentUser.id);
 
     const handleReceiveMessage = (message) => dispatch(addMessages(message));
@@ -122,7 +124,7 @@ const ChatBox = () => {
       socket.off("receiveMessage", handleReceiveMessage);
       socket.off("updateSeen", handleUpdateSeen);
     };
-  }, [socket, dispatch, messages, currentUser]);
+  }, [socket, dispatch, messages, currentUser, messagesLoaded]);
 
   // Mark messages as seen
   useEffect(() => {
@@ -138,7 +140,6 @@ const ChatBox = () => {
     }
   }, [messages, chatUser, currentUser, socket]);
 
-  // Sorted & filtered messages memo
   const sortedMessages = useMemo(
     () =>
       messages

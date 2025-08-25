@@ -10,10 +10,10 @@ const Discover = () => {
   const [input, setInput] = useState("");
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { getToken } = useAuth();
+  const { getToken, isLoaded } = useAuth();
 
   useEffect(() => {
-    if (!input.trim()) {
+    if (!isLoaded || !input.trim()) {
       setUsers([]);
       return;
     }
@@ -37,7 +37,7 @@ const Discover = () => {
     };
 
     fetchUsers();
-  }, [input, getToken]);
+  }, [input, getToken, isLoaded]);
 
   // Memoize users grid
   const usersGrid = useMemo(() => {
@@ -53,9 +53,11 @@ const Discover = () => {
     ));
   }, [users, input, loading]);
 
+  if (!isLoaded) return <Loading height="60vh" />;
+
   return (
     <div className="h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col">
-      <div className="sticky top-0 z-10 border-b border-gray-200 px-4 py-6">
+      <div className="sticky top-0 z-10 border-b border-gray-200 px-4 py-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-4">
             <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-1">
@@ -84,14 +86,10 @@ const Discover = () => {
         {input.length > 0 ? (
           loading ? (
             <Loading height="60vh" />
-          ) : usersGrid.length > 0 ? (
+          ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto transition-all duration-300">
               {usersGrid}
             </div>
-          ) : (
-            <p className="text-center text-gray-400 text-sm sm:text-base mt-12">
-              No users found for "{input}"
-            </p>
           )
         ) : (
           <p className="text-center text-gray-400 text-sm sm:text-base mt-12">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import Loading from "../components/Loading";
 import UserProfileInfo from "../components/UserProfileInfo";
 import PostCard from "../components/PostCard";
@@ -9,10 +9,10 @@ import ProfileModel from "../components/ProfileModel";
 import api from "../api/axios";
 import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
-import { fetchConnections } from "../features/connectionSlice";
+
+const CACHE_EXPIRATION = 5 * 60 * 1000; // 5 minutes
 
 const Profile = () => {
-  const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.user.value);
   const { getToken } = useAuth();
   const { profileId } = useParams();
@@ -22,9 +22,12 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("Posts");
   const [showEdit, setShowEdit] = useState(false);
 
+  const cacheKey = `profile_${profileId || currentUser?._id}`;
+
   const fetchUser = async (profileId) => {
     try {
       const token = await getToken();
+
       const { data } = await api.post(
         `/api/user/profiles`,
         { profileId },
@@ -32,7 +35,7 @@ const Profile = () => {
       );
 
       if (data.success) {
-        // Optimize cover photo & post images with ImageKit
+        // Optimize images
         const optimizedPosts = data.posts.map((post) => ({
           ...post,
           image_urls: post.image_urls.map((url) =>
@@ -40,7 +43,7 @@ const Profile = () => {
           ),
         }));
 
-        setUser({
+        const optimizedUser = {
           ...data.profile,
           cover_photo: data.profile.cover_photo
             ? data.profile.cover_photo.replace(
@@ -48,8 +51,18 @@ const Profile = () => {
                 "/tr:q-70:f-webp:w-600/"
               )
             : null,
-        });
+        };
+
+        setUser(optimizedUser);
         setPosts(optimizedPosts);
+
+        // Save to cache with timestamp
+        const cacheData = {
+          user: optimizedUser,
+          posts: optimizedPosts,
+          timestamp: Date.now(),
+        };
+        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
       } else {
         toast.error(data.message);
       }
@@ -59,14 +72,26 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    if (profileId) {
-      fetchUser(profileId);
-    } else if (currentUser?._id) {
-      fetchUser(currentUser._id);
-    }
+    const loadProfile = async () => {
+      // Try to load from cache
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        const expired = Date.now() - parsed.timestamp > CACHE_EXPIRATION;
+        if (!expired) {
+          setUser(parsed.user);
+          setPosts(parsed.posts);
+        }
+      }
+
+      // Always fetch fresh data in background to update cache
+      await fetchUser(profileId || currentUser?._id);
+    };
+
+    loadProfile();
   }, [profileId, currentUser]);
 
-  // Memoize posts with images for Media tab
+  // Prepare media posts for Media tab
   const mediaPosts = useMemo(
     () =>
       posts
@@ -109,6 +134,7 @@ const Profile = () => {
           />
         </div>
 
+        {/* Tabs */}
         <div className="mt-6">
           <div className="relative bg-white rounded-xl shadow p-1 flex max-w-sm mx-auto overflow-hidden">
             <div

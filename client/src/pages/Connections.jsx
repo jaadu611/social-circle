@@ -16,6 +16,7 @@ import toast from "react-hot-toast";
 
 const Connections = () => {
   const [currentTab, setCurrentTab] = useState("Followers");
+  const [loaded, setLoaded] = useState(false); // track lazy load
   const navigate = useNavigate();
   const { getToken } = useAuth();
   const dispatch = useDispatch();
@@ -39,16 +40,28 @@ const Connections = () => {
     [currentTab, dataArray]
   );
 
+  // Lazy load connections after render
+  useEffect(() => {
+    const loadConnections = async () => {
+      const token = await getToken();
+      dispatch(fetchConnections(token));
+      setLoaded(true);
+    };
+    const timer = setTimeout(loadConnections, 0);
+    return () => clearTimeout(timer);
+  }, [dispatch, getToken]);
+
   const acceptConnection = async (userId) => {
     try {
+      const token = await getToken();
       const { data } = await api.post(
         "/api/user/accept",
         { id: userId },
-        { headers: { Authorization: `Bearer ${await getToken()}` } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (data.success) {
         toast.success(data.message);
-        dispatch(fetchConnections(await getToken()));
+        dispatch(fetchConnections(token));
       } else toast.error(data.message);
     } catch (error) {
       toast.error(error.message);
@@ -57,22 +70,26 @@ const Connections = () => {
 
   const handleUnfollow = async (userId) => {
     try {
+      const token = await getToken();
       const { data } = await api.post(
         "/api/user/unfollow",
         { id: userId },
-        { headers: { Authorization: `Bearer ${await getToken()}` } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (data.success) {
-        dispatch(fetchConnections(await getToken()));
+        dispatch(fetchConnections(token));
       } else toast.error(data.message);
     } catch (error) {
       toast.error(error.message);
     }
   };
 
-  useEffect(() => {
-    getToken().then((token) => dispatch(fetchConnections(token)));
-  }, [dispatch, getToken]);
+  if (!loaded)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -137,9 +154,8 @@ const Connections = () => {
                   className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-md group-hover:ring-2 group-hover:ring-indigo-600 transition-all duration-200"
                 />
               )}
-
               <div className="flex-1">
-                <p className="relative w-fit text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-purple-700 transition-all duration-200 after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-[1.5px] after:w-0 after:bg-purple-500 group-hover:after:w-full after:transition-all after:duration-300">
+                <p className="relative w-fit text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-purple-700 transition-all duration-200">
                   {user.full_name}
                 </p>
                 {user.username && (

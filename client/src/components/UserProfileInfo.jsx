@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Calendar, MapPin, PenBox, UserPlus, UserX } from "lucide-react";
+import { Calendar, MapPin, UserPlus, UserX, PenBox } from "lucide-react";
 import moment from "moment";
 import { useAuth } from "@clerk/clerk-react";
 import { useSelector, useDispatch } from "react-redux";
@@ -29,48 +29,33 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
     [currentUser.connections, user._id]
   );
 
-  const handleFollow = async () => {
-    try {
-      const token = await getToken();
-      const { data } = await api.post(
-        "/api/user/follow",
-        { id: user._id },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (data.success) {
-        setIsFollowing(true);
-        dispatch(fetchConnections(token));
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
+  const handleFollowToggle = async () => {
+    const action = isFollowing ? "/api/user/unfollow" : "/api/user/follow";
+    const optimisticState = !isFollowing;
 
-  const handleUnfollow = async () => {
+    setIsFollowing(optimisticState);
     try {
       const token = await getToken();
       const { data } = await api.post(
-        "/api/user/unfollow",
+        action,
         { id: user._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (data.success) {
-        setIsFollowing(false);
-        dispatch(fetchConnections(token));
-      } else {
+      if (!data.success) {
+        setIsFollowing(!optimisticState);
         toast.error(data.message);
+      } else {
+        dispatch(fetchConnections(token));
       }
     } catch (error) {
+      setIsFollowing(!optimisticState);
       toast.error(error.message);
     }
   };
 
   const handleConnectionRequest = async () => {
     if (isConnected) {
-      navigate(`/messages/${user._id}`);
-      return;
+      return navigate(`/messages/${user._id}`);
     }
     try {
       const token = await getToken();
@@ -79,12 +64,8 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
         { id: user._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (data.success) {
-        toast.success(data.message);
-        dispatch(fetchConnections(token));
-      } else {
-        toast.error(data.message);
-      }
+      toast[data.success ? "success" : "error"](data.message);
+      if (data.success) dispatch(fetchConnections(token));
     } catch (error) {
       toast.error(error.message);
     }
@@ -93,6 +74,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
   return (
     <div className="rounded-xl shadow-lg">
       <div className="relative max-w-5xl mx-auto p-6 sm:p-8 md:p-10">
+        {/* Edit Button */}
         {isOwnProfile && (
           <button
             onClick={() => setShowEdit(true)}
@@ -103,7 +85,9 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
           </button>
         )}
 
+        {/* Profile Info */}
         <div className="flex flex-col bp-411:flex-row items-center bp-411:items-start gap-6">
+          {/* Avatar */}
           <div className="flex-shrink-0 w-32 h-32 rounded-full overflow-hidden border-4 border-white -mt-24 md:-mt-26 relative z-10">
             {user?.profile_picture && (
               <img
@@ -115,7 +99,9 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
             )}
           </div>
 
+          {/* Info & Actions */}
           <div className="flex-1 w-full flex flex-col bp-411:flex-row bp-411:justify-between gap-4 bp-411:gap-6 mt-4 bp-411:mt-0 z-0">
+            {/* User Details */}
             <div className="flex-1 min-w-0 text-center bp-411:text-left">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
                 {user.full_name}
@@ -130,6 +116,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
                 </p>
               )}
 
+              {/* Stats */}
               <div className="flex mt-4 text-gray-700 justify-center bp-411:justify-start">
                 <div className="min-w-[80px] text-center">
                   <span className="font-bold text-lg sm:text-xl">
@@ -157,6 +144,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
                 </div>
               </div>
 
+              {/* Location & Joined */}
               <div className="flex flex-wrap gap-4 mt-4 text-gray-500 text-sm justify-center bp-411:justify-start">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
@@ -169,10 +157,12 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
               </div>
             </div>
 
+            {/* Action Buttons */}
             {!isOwnProfile && (
-              <div className="flex flex-col items-center md:flex-row bp-411:items-end gap-3 mt-4 bp-411:mt-0">
+              <div className="flex flex-col md:flex-row bp-411:items-end gap-3 mt-4 bp-411:mt-0">
                 <button
-                  onClick={!isFollowing ? handleFollow : handleUnfollow}
+                  onClick={handleFollowToggle}
+                  aria-label={isFollowing ? "Unfollow" : "Follow"}
                   className={`flex items-center cursor-pointer justify-center gap-2 w-full bp-411:w-44 px-4 py-2 rounded-md font-medium text-white transition text-xs sm:text-sm ${
                     isFollowing
                       ? "bg-red-500 hover:bg-red-600"

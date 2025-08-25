@@ -7,10 +7,11 @@ const AnimatedHeart = ({ size = 24, liked = false, onClick }) => {
   const handleClick = () => {
     onClick?.();
 
-    setIsBouncing(false);
-    setTimeout(() => setIsBouncing(true), 10);
+    // Trigger bounce animation
+    setIsBouncing(true);
     setTimeout(() => setIsBouncing(false), 600);
 
+    // Only generate particles if unliked
     if (!liked) {
       const newParticles = Array.from({ length: 8 }, (_, i) => ({
         id: Date.now() + i,
@@ -22,6 +23,7 @@ const AnimatedHeart = ({ size = 24, liked = false, onClick }) => {
 
       setParticles((prev) => [...prev, ...newParticles]);
 
+      // Remove particles after animation
       setTimeout(() => {
         setParticles((prev) => prev.filter((p) => !newParticles.includes(p)));
       }, 800);
@@ -30,15 +32,9 @@ const AnimatedHeart = ({ size = 24, liked = false, onClick }) => {
 
   return (
     <div
-      className="heart-container transform hover:scale-110 hover:-translate-y-0.5 transition-all duration-200"
+      className="heart-container relative inline-flex items-center justify-center cursor-pointer transition-transform hover:scale-110 hover:-translate-y-1"
       onClick={handleClick}
-      style={{ 
-        position: "relative",
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-      }}
+      style={{ position: "relative" }}
     >
       {/* Particles */}
       {particles.map((particle) => {
@@ -49,14 +45,11 @@ const AnimatedHeart = ({ size = 24, liked = false, onClick }) => {
         return (
           <div
             key={particle.id}
-            className="particle"
+            className="particle absolute rounded-full bg-red-500 pointer-events-none"
             style={{
               width: particle.size,
               height: particle.size,
-              borderRadius: "50%",
-              position: "absolute",
-              pointerEvents: "none",
-              backgroundColor: "#ff6b6b",
+              transform: `translate(0, 0)`,
               animation: `particleFloat 0.8s ease-out forwards`,
               animationDelay: `${particle.delay}ms`,
               "--tx": `${tx}px`,
@@ -73,7 +66,7 @@ const AnimatedHeart = ({ size = 24, liked = false, onClick }) => {
         viewBox="0 0 24 24"
         className={`heart-svg ${liked ? "liked" : ""} ${
           isBouncing ? "bounce" : ""
-        }`}
+        } transition-transform duration-200`}
       >
         <defs>
           <linearGradient
@@ -96,6 +89,7 @@ const AnimatedHeart = ({ size = 24, liked = false, onClick }) => {
         />
       </svg>
 
+      {/* Styles */}
       <style>{`
         @keyframes bounceHeart {
           0% { transform: scale(1); }
@@ -113,13 +107,6 @@ const AnimatedHeart = ({ size = 24, liked = false, onClick }) => {
         @keyframes particleFloat {
           0% { opacity: 1; transform: translate(0,0) scale(1); }
           100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
-        }
-
-        .particle {
-          border-radius: 50%;
-          position: absolute;
-          pointer-events: none;
-          animation: particleFloat 0.8s ease-out forwards;
         }
       `}</style>
     </div>

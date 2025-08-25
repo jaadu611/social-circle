@@ -19,12 +19,14 @@ const MenuItems = ({ setSidebarOpen }) => (
         end={to === "/"}
         onClick={() => setSidebarOpen(false)}
         className={({ isActive }) =>
-          `px-3.5 py-2 flex items-center gap-3 rounded-xl transition-all duration-200 ${
+          `px-3.5 py-2 flex items-center gap-3 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
             isActive ? "bg-indigo-50 text-indigo-700" : "hover:bg-gray-50"
           }`
         }
+        aria-current={({ isActive }) => (isActive ? "page" : undefined)}
+        title={label}
       >
-        <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+        <Icon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
         <span className="truncate max-w-[140px] sm:max-w-none">{label}</span>
       </NavLink>
     ))}

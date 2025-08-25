@@ -10,9 +10,11 @@ import { motion } from "framer-motion";
 const Feed = () => {
   const [feeds, setFeeds] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { getToken } = useAuth();
+  const { getToken, isLoaded } = useAuth();
 
   const fetchFeeds = async () => {
+    if (!isLoaded) return;
+
     try {
       setLoading(true);
       const token = await getToken();
@@ -20,13 +22,10 @@ const Feed = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (res.data.success) {
-        setFeeds(res.data.posts);
-      } else {
-        toast.error(res.data.message);
-      }
+      if (res.data.success) setFeeds(res.data.posts);
+      else toast.error(res.data.message || "Failed to fetch feed");
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -34,8 +33,9 @@ const Feed = () => {
 
   useEffect(() => {
     fetchFeeds();
-  }, []);
+  }, [isLoaded]);
 
+  // Memoize feed items for performance
   const feedItems = useMemo(
     () =>
       feeds.map((post, index) => (
@@ -60,7 +60,7 @@ const Feed = () => {
     [feeds]
   );
 
-  if (loading) return <Loading />;
+  if (!isLoaded || loading) return <Loading />;
 
   return (
     <div className="p-4 flex justify-center xl:justify-between gap-6 mx-auto flex-1 h-full">

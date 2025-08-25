@@ -7,7 +7,7 @@ const Messages = () => {
   const { connections } = useSelector((state) => state.connections);
   const navigate = useNavigate();
 
-  // Memoize connections to prevent re-render
+  // Memoize connection cards to prevent unnecessary re-renders
   const connectionCards = useMemo(
     () =>
       connections.map((user) => (
@@ -74,6 +74,7 @@ const Messages = () => {
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white">
+      {/* Header */}
       <div className="shrink-0 px-4 py-6 sm:px-6 lg:px-8 text-center z-10 border-b border-gray-200">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mb-1">
           Messages
@@ -91,7 +92,7 @@ const Messages = () => {
         </div>
       ) : (
         <div className="flex flex-1 justify-center mt-30 h-full text-center px-4 bg-transparent">
-          <p className="text-gray-400 text-sm sm:text-base md:text-lg lg:text-xl text-center">
+          <p className="text-gray-400 text-sm sm:text-base md:text-lg lg:text-xl">
             You haven’t added any connections yet. <br />
             Add connections to start chatting!
           </p>

@@ -1,6 +1,6 @@
 import { Sparkle, TextIcon, Upload, X } from "lucide-react";
 import tinycolor from "tinycolor2";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
@@ -29,12 +29,18 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
   const [text, setText] = useState("");
   const [media, setMedia] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-
-  const textColor = tinycolor(background).isLight() ? "#1f2937" : "#f8fafc";
   const { getToken } = useAuth();
 
   const MAX_VIDEO_DURATION_SECONDS = 60;
   const MAX_VIDEO_SIZE_MB = 50;
+
+  const textColor = tinycolor(background).isLight() ? "#1f2937" : "#f8fafc";
+
+  // Cleanup object URLs when modal closes
+  const closeModel = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setShowModel(false);
+  };
 
   const handleMediaUpload = (e) => {
     const file = e.target.files?.[0];
@@ -44,7 +50,7 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
     const isImage = file.type.startsWith("image");
 
     if (isVideo && file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
-      toast.error(`File can’t be more than ${MAX_VIDEO_SIZE_MB} MB`);
+      toast.error(`File can’t exceed ${MAX_VIDEO_SIZE_MB} MB`);
       return;
     }
 
@@ -55,8 +61,10 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
         window.URL.revokeObjectURL(video.src);
         if (video.duration > MAX_VIDEO_DURATION_SECONDS) {
           toast.error(
-            `Video duration can’t be more than ${MAX_VIDEO_DURATION_SECONDS} seconds`
+            `Video duration can't exceed ${MAX_VIDEO_DURATION_SECONDS}s`
           );
+          setMedia(null);
+          setPreviewUrl(null);
         } else {
           setMedia(file);
           setPreviewUrl(URL.createObjectURL(file));
@@ -100,7 +108,7 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
 
       if (data.success) {
         toast.success("Story posted");
-        setShowModel(false);
+        closeModel();
         fetchStories();
       } else {
         toast.error(data.message);
@@ -110,12 +118,19 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
     }
   };
 
+  // Cleanup preview URL if component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   return (
     <div className="fixed inset-0 z-[110] flex justify-center items-center p-4 bg-black/80 backdrop-blur text-white">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="flex justify-between items-center mb-4 text-center">
-          <button onClick={() => setShowModel(false)} className="text-white">
+          <button onClick={closeModel} className="text-white">
             <X className="hover:scale-105 transition-all duration-200 rounded-full p-1" />
           </button>
           <h2 className="text-lg font-semibold">Create Story</h2>
@@ -142,7 +157,7 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
               {media?.type.startsWith("image") ? (
                 <img
                   src={previewUrl}
-                  alt=""
+                  alt="Story preview"
                   className="h-full object-contain"
                   loading="lazy"
                 />
@@ -187,6 +202,7 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
           </button>
 
           <label
+            htmlFor="mediaUpload"
             className={`flex-1 flex items-center justify-center gap-2 p-2 rounded cursor-pointer transition ${
               mode === "media"
                 ? "bg-white text-black hover:bg-gray-300"
@@ -194,6 +210,7 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
             }`}
           >
             <input
+              id="mediaUpload"
               type="file"
               accept="image/*, video/*"
               hidden

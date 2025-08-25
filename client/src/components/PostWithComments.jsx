@@ -1,10 +1,10 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import moment from "moment";
 import DOMPurify from "dompurify";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
 import { toast } from "react-hot-toast";
@@ -19,83 +19,68 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
   const [likes, setLikes] = useState(post.likes_count || []);
   const [shares, setShares] = useState(post.shares_count || 0);
   const currentUser = useSelector((state) => state.user.value);
-  const [loading, setLoading] = useState(
-    Array.isArray(post.image_urls) && post.image_urls.length > 0
-  );
+  const [loading, setLoading] = useState(true);
   const { getToken } = useAuth();
   const [hover, setHover] = useState(false);
 
-  const formatHashtags = (html) =>
-    html.replace(
-      /#([\p{L}\p{N}_]+)/gu,
-      (match) =>
-        `<span class="inline-block text-purple-600 font-medium hover:bg-purple-100 px-1 rounded cursor-pointer transition-all duration-150">${match}</span>`
+  const sanitizedContent = useMemo(() => {
+    if (!post.content) return "";
+    return DOMPurify.sanitize(
+      post.content.replace(
+        /#([\p{L}\p{N}_]+)/gu,
+        (match) =>
+          `<span class="inline-block text-purple-600 font-medium hover:bg-purple-100 px-1 rounded cursor-pointer transition-all duration-150">${match}</span>`
+      )
     );
+  }, [post.content]);
 
   const prevImage = () =>
     setCurrentIndex((prev) =>
       prev === 0 ? post.image_urls.length - 1 : prev - 1
     );
-
   const nextImage = () =>
     setCurrentIndex((prev) =>
       prev === post.image_urls.length - 1 ? 0 : prev + 1
     );
 
   const handleLike = async () => {
-    // Optimistic update: toggle like immediately
-    setLikes((prev) => {
-      if (prev.includes(currentUser?._id)) {
-        return prev.filter((id) => id !== currentUser._id);
-      } else {
-        return [...(prev || []), currentUser._id];
-      }
-    });
+    const alreadyLiked = likes.includes(currentUser?._id);
+    setLikes((prev) =>
+      alreadyLiked
+        ? prev.filter((id) => id !== currentUser._id)
+        : [...prev, currentUser._id]
+    );
 
     try {
       const token = await getToken();
       const { data } = await api.post(
         `/api/post/like/${post._id}`,
         {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      // Sync with backend in case counts differ
-      if (data.success && data.likes) {
-        setLikes(data.likes);
-      }
+      if (data.success && data.likes) setLikes(data.likes);
     } catch (error) {
-      // Revert UI if API fails
       toast.error(error.response?.data?.message || error.message);
-      setLikes((prev) => {
-        if (prev.includes(currentUser?._id)) {
-          return prev.filter((id) => id !== currentUser._id);
-        } else {
-          return [...(prev || []), currentUser._id];
-        }
-      });
+      setLikes((prev) =>
+        alreadyLiked
+          ? [...prev, currentUser._id]
+          : prev.filter((id) => id !== currentUser._id)
+      );
     }
   };
 
   const handleShare = async () => {
     const postUrl = `${window.location.origin}/post/${post._id}`;
     const token = await getToken();
-
     const recordShare = async () => {
       try {
         await api.post(
           `/api/post/share/${post._id}`,
           {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setShares((prev) => prev + 1);
-      } catch (err) {
-        console.error("Failed to record share:", err);
-      }
+      } catch {}
     };
 
     if (navigator.share) {
@@ -106,14 +91,14 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
           url: postUrl,
         });
         await recordShare();
-      } catch (err) {
+      } catch {
         toast.error("Sharing cancelled or failed");
       }
     } else {
       try {
         await navigator.clipboard.writeText(postUrl);
         toast.success("Post URL copied to clipboard!");
-      } catch (err) {
+      } catch {
         toast.error("Failed to copy URL");
       }
     }
@@ -125,14 +110,11 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
       const { data } = await api.delete(`/api/post/${post._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       if (data.success) {
         toast.success("Post deleted successfully!");
-        if (onDelete) onDelete(post._id);
+        onDelete?.(post._id);
         navigate("/");
-      } else {
-        toast.error(data.message || "Failed to delete post");
-      }
+      } else toast.error(data.message || "Failed to delete post");
     } catch (err) {
       toast.error(
         err.response?.data?.message || err.message || "Something went wrong"
@@ -147,10 +129,10 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="bg-white rounded-2xl shadow-lg px-4 py-3 space-y-4 w-full min-w-[100px] sm:min-w-[120px] max-w-[calc(100vw-2rem)] transform-gpu"
+      className="bg-white rounded-2xl shadow-lg px-4 py-3 space-y-4 w-full max-w-[calc(100vw-2rem)] transform-gpu"
       style={{ willChange: "transform" }}
     >
-      {/* User Header */}
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div
           onClick={
@@ -179,31 +161,34 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
         </div>
       </div>
 
+      {/* Content */}
       {post.content && (
         <div
           className="text-gray-800 text-sm sm:text-base whitespace-pre-line break-words leading-relaxed"
-          dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(formatHashtags(post.content)),
-          }}
+          dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         />
       )}
 
+      {/* Image Carousel */}
       {Array.isArray(post.image_urls) && post.image_urls.length > 0 && (
-        <div className="relative w-full overflow-hidden rounded-lg h-[250px] sm:h-[300px] md:h-[350px]">
+        <div className="relative w-full overflow-hidden rounded-lg h-[300px] sm:h-[350px]">
           {loading && <Loading height="100%" />}
-          <motion.img
-            key={currentIndex}
-            src={post.image_urls[currentIndex]}
-            alt={`post-${currentIndex}`}
-            loading="lazy"
-            className="w-full h-full object-contain rounded-lg shadow-sm object-center"
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -100, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            onLoad={() => setLoading(false)}
-            onError={() => setLoading(false)}
-          />
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={currentIndex}
+              src={post.image_urls[currentIndex]}
+              alt={`post-${currentIndex}`}
+              loading="lazy"
+              className="w-full h-full object-contain rounded-lg shadow-sm object-center"
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -100, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              onLoad={() => setLoading(false)}
+              onError={() => setLoading(false)}
+            />
+          </AnimatePresence>
+
           {post.image_urls.length > 1 && (
             <>
               <button
@@ -239,12 +224,12 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
       )}
 
       {/* Post Actions */}
-      <div className="flex items-center justify-between border-t border-gray-200">
-        <div className="flex flex-wrap items-center gap-3 text-gray-600 text-sm pt-5">
+      <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+        <div className="flex flex-wrap items-center gap-3 text-gray-600 text-sm">
           <div className="flex items-center gap-1">
             <AnimatedHeart
-              onClick={handleLike}
               liked={likes.includes(currentUser._id)}
+              onClick={handleLike}
               role="button"
               aria-label="Like post"
             />
@@ -256,11 +241,11 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
               onClick={handleShare}
               role="button"
               aria-label="Share post"
-              className="cursor-pointer"
             />
             <span className="w-2 text-center">{shares}</span>
           </div>
         </div>
+
         {currentUser?._id === post.user?._id && (
           <button
             onClick={handleDelete}

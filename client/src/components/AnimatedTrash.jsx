@@ -11,7 +11,6 @@ const AnimatedTrash = ({ size = 24, onClick, className = "" }) => {
     setTimeout(() => setIsDeleting(false), 1500); // reset after animation
   };
 
-  // Variants for the lid + handle wobble
   const lidVariants = {
     rest: { rotate: 0, y: 0 },
     hover: { rotate: -20, y: -3 },
@@ -22,7 +21,6 @@ const AnimatedTrash = ({ size = 24, onClick, className = "" }) => {
     },
   };
 
-  // Variants for body content lines
   const contentVariants = {
     rest: { y: 0, opacity: 1, scale: 1 },
     delete: {
@@ -34,6 +32,7 @@ const AnimatedTrash = ({ size = 24, onClick, className = "" }) => {
   };
 
   const containerSize = size * 1.5;
+  const particleCount = 8;
 
   return (
     <motion.div
@@ -70,7 +69,7 @@ const AnimatedTrash = ({ size = 24, onClick, className = "" }) => {
           animate={isDeleting ? "delete" : isHovered ? "hover" : "rest"}
           style={{ originX: 0.5, originY: 1 }}
         >
-          <motion.rect
+          <rect
             x="3"
             y="4"
             width="18"
@@ -78,7 +77,7 @@ const AnimatedTrash = ({ size = 24, onClick, className = "" }) => {
             rx="1"
             fill="url(#trashGradient)"
           />
-          <motion.rect
+          <rect
             x="10"
             y="2"
             width="4"
@@ -90,7 +89,7 @@ const AnimatedTrash = ({ size = 24, onClick, className = "" }) => {
         </motion.g>
 
         {/* Body */}
-        <motion.path
+        <path
           d="M5 7L6 20C6 21.1 6.9 22 8 22H16C17.1 22 18 21.1 18 20L19 7H5Z"
           fill="rgba(239,68,68,0.1)"
           stroke="url(#trashGradient)"
@@ -104,7 +103,7 @@ const AnimatedTrash = ({ size = 24, onClick, className = "" }) => {
           variants={contentVariants}
           animate={isDeleting ? "delete" : "rest"}
         >
-          <motion.line
+          <line
             x1="10"
             y1="11"
             x2="10"
@@ -113,7 +112,7 @@ const AnimatedTrash = ({ size = 24, onClick, className = "" }) => {
             strokeWidth="2"
             strokeLinecap="round"
           />
-          <motion.line
+          <line
             x1="14"
             y1="11"
             x2="14"
@@ -124,11 +123,11 @@ const AnimatedTrash = ({ size = 24, onClick, className = "" }) => {
           />
         </motion.g>
 
-        {/* Deletion particles */}
+        {/* Particles */}
         <AnimatePresence>
           {isDeleting &&
-            [...Array(8)].map((_, i) => {
-              const angle = (i * 45 * Math.PI) / 180;
+            Array.from({ length: particleCount }).map((_, i) => {
+              const angle = ((i * 360) / particleCount) * (Math.PI / 180);
               return (
                 <motion.circle
                   key={i}

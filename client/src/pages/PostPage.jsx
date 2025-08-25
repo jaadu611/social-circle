@@ -20,18 +20,12 @@ const PostPage = () => {
       try {
         setLoading(true);
         const token = await getToken();
-
         const { data } = await api.get(`/api/post/${postId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (data.success) {
-          setPost(data.post);
-        } else {
-          toast.error(data.message || "Failed to fetch post");
-        }
+        if (data.success) setPost(data.post);
+        else toast.error(data.message || "Failed to fetch post");
       } catch (error) {
         toast.error(error.message || "Something went wrong");
       } finally {
@@ -55,7 +49,7 @@ const PostPage = () => {
         <p className="text-gray-500 text-lg sm:text-xl mb-4">Post not found</p>
         <button
           onClick={() => navigate(-1)}
-          className="px-4 py-2 bg-indigo-500 text-white rounded-md cursor-pointer hover:bg-indigo-600 transition"
+          className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition"
         >
           Go Back
         </button>
@@ -75,14 +69,14 @@ const PostPage = () => {
         <h1 className="text-xl sm:text-2xl font-semibold">Post</h1>
       </div>
 
-      {/* Post stays fixed at the top */}
+      {/* Post */}
       <div className="flex-shrink-0 mb-4">
         <PostWithComments post={post} />
       </div>
 
-      {/* Comments scrollable */}
+      {/* Comments */}
       <div className="flex-1 overflow-y-auto">
-        <Comments postId={post._id}/>
+        <Comments postId={post._id} />
       </div>
     </div>
   );

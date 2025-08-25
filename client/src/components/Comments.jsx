@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "react-hot-toast";
 import moment from "moment";
-import api from "../api/axios.js";
 import { Link } from "react-router-dom";
+import api from "../api/axios.js";
 import Loading from "./Loading.jsx";
 import AnimatedTrash from "./AnimatedTrash.jsx";
 import AnimatedHeart from "./AnimatedHeart.jsx";
@@ -16,29 +16,32 @@ const Comments = ({ postId }) => {
   const [posting, setPosting] = useState(false);
   const [hoveredTrash, setHoveredTrash] = useState({});
 
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        setFetching(true);
-        const token = await getToken();
-        const { data } = await api.get(`/api/post/${postId}/comments`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setComments(data.comments || []);
-      } catch (err) {
-        console.error("Failed to load comments:", err);
-        toast.error("Failed to load comments");
-      } finally {
-        setFetching(false);
-      }
-    };
-    if (postId) fetchComments();
+  // Fetch comments
+  const fetchComments = useCallback(async () => {
+    if (!postId) return;
+    setFetching(true);
+    try {
+      const token = await getToken();
+      const { data } = await api.get(`/api/post/${postId}/comments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setComments(data.comments || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load comments");
+    } finally {
+      setFetching(false);
+    }
   }, [postId, getToken]);
 
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
+
+  // Add a new comment
   const handleAddComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
-
     setPosting(true);
     try {
       const token = await getToken();
@@ -47,7 +50,6 @@ const Comments = ({ postId }) => {
         { content: newComment },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       if (data.success) {
         setComments((prev) => [data.comment, ...prev]);
         setNewComment("");
@@ -59,6 +61,7 @@ const Comments = ({ postId }) => {
     }
   };
 
+  // Delete comment
   const handleDeleteComment = async (commentId) => {
     try {
       const token = await getToken();
@@ -72,8 +75,8 @@ const Comments = ({ postId }) => {
     }
   };
 
+  // Like comment with optimistic update
   const handleLikeComment = async (commentId) => {
-    // Optimistic update
     setComments((prev) =>
       prev.map((c) => {
         if (c._id === commentId) {
@@ -94,12 +97,12 @@ const Comments = ({ postId }) => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       setComments((prev) =>
         prev.map((c) => (c._id === commentId ? { ...c, likes: data.likes } : c))
       );
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to like comment");
+      // Revert optimistic update on error
       setComments((prev) =>
         prev.map((c) => {
           if (c._id === commentId) {
@@ -133,7 +136,7 @@ const Comments = ({ postId }) => {
         <button
           type="submit"
           disabled={posting}
-          className="bg-indigo-500 text-white cursor-pointer px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition disabled:opacity-50 min-w-[60px]"
+          className="bg-indigo-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition disabled:opacity-50 min-w-[60px]"
         >
           {posting ? "Posting..." : "Post"}
         </button>
@@ -142,19 +145,19 @@ const Comments = ({ postId }) => {
       {/* Comments List */}
       <div
         className="space-y-4 overflow-y-auto h-full"
-        style={{
-          transform: "translateZ(0)",
-          willChange: "transform, scroll",
-        }}
+        style={{ transform: "translateZ(0)", willChange: "transform, scroll" }}
       >
         {fetching ? (
           <div className="flex justify-center py-10">
-            <Loading />
+            <Loading height="50vh" />
           </div>
-        ) : comments.length > 0 ? (
+        ) : comments.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-4">
+            No comments yet. Be the first! 🚀
+          </p>
+        ) : (
           comments.map((comment) => {
             const isLiked = comment.likes?.includes(userId);
-
             return (
               <div
                 key={comment._id}
@@ -188,7 +191,7 @@ const Comments = ({ postId }) => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       {/* Like Button */}
                       <div className="flex items-center gap-1">
                         <AnimatedHeart
@@ -196,7 +199,6 @@ const Comments = ({ postId }) => {
                           onClick={() => handleLikeComment(comment._id)}
                           size={16}
                         />
-                        {/* Fixed width for like count */}
                         <span className="text-sm text-gray-600 w-2 text-center inline-block">
                           {comment.likes?.length || 0}
                         </span>
@@ -238,10 +240,6 @@ const Comments = ({ postId }) => {
               </div>
             );
           })
-        ) : (
-          <p className="text-sm text-gray-400 text-center py-4">
-            No comments yet. Be the first! 🚀
-          </p>
         )}
       </div>
     </div>

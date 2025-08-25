@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Pencil } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser } from "../features/userSlice";
@@ -19,31 +19,62 @@ const ProfileModel = ({ setShowEdit }) => {
     full_name: user.full_name,
   });
 
+  // Memoized previews
+  const profilePreview = useMemo(
+    () =>
+      editForm.profile_picture
+        ? URL.createObjectURL(editForm.profile_picture)
+        : user.profile_picture,
+    [editForm.profile_picture, user.profile_picture]
+  );
+
+  const coverPreview = useMemo(
+    () =>
+      editForm.cover_photo
+        ? URL.createObjectURL(editForm.cover_photo)
+        : user.cover_photo,
+    [editForm.cover_photo, user.cover_photo]
+  );
+
+  useEffect(() => {
+    return () => {
+      // Revoke object URLs on unmount
+      editForm.profile_picture && URL.revokeObjectURL(editForm.profile_picture);
+      editForm.cover_photo && URL.revokeObjectURL(editForm.cover_photo);
+    };
+  }, [editForm.profile_picture, editForm.cover_photo]);
+
   const handleSaveProfile = async (e) => {
     e.preventDefault();
-    try {
-      const {
-        username,
-        full_name,
-        bio,
-        location,
-        profile_picture,
-        cover_photo,
-      } = editForm;
-      const userData = new FormData();
-      userData.append("username", username);
-      userData.append("full_name", full_name);
-      userData.append("bio", bio);
-      userData.append("location", location);
-      if (profile_picture) userData.append("profile_picture", profile_picture);
-      if (cover_photo) userData.append("cover_photo", cover_photo);
+    toast.promise(
+      (async () => {
+        const {
+          username,
+          full_name,
+          bio,
+          location,
+          profile_picture,
+          cover_photo,
+        } = editForm;
+        const userData = new FormData();
+        userData.append("username", username);
+        userData.append("full_name", full_name);
+        userData.append("bio", bio);
+        userData.append("location", location);
+        if (profile_picture)
+          userData.append("profile_picture", profile_picture);
+        if (cover_photo) userData.append("cover_photo", cover_photo);
 
-      const token = await getToken();
-      dispatch(updateUser({ userData, token }));
-      setShowEdit(false);
-    } catch (error) {
-      toast.error(error.message);
-    }
+        const token = await getToken();
+        await dispatch(updateUser({ userData, token }));
+        setShowEdit(false);
+      })(),
+      {
+        loading: "Saving...",
+        success: "Profile updated!",
+        error: "Failed to update profile.",
+      }
+    );
   };
 
   return (
@@ -64,16 +95,12 @@ const ProfileModel = ({ setShowEdit }) => {
             htmlFor="cover_photo"
             className="relative w-full h-full cursor-pointer"
           >
-            {!user.cover_photo && !editForm.cover_photo && (
+            {!coverPreview && (
               <div className="w-full h-full bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200" />
             )}
-            {(user.cover_photo || editForm.cover_photo) && (
+            {coverPreview && (
               <img
-                src={
-                  editForm.cover_photo
-                    ? URL.createObjectURL(editForm.cover_photo)
-                    : user.cover_photo
-                }
+                src={coverPreview}
                 loading="lazy"
                 alt="Cover"
                 className="w-full h-full object-cover"
@@ -101,14 +128,10 @@ const ProfileModel = ({ setShowEdit }) => {
               htmlFor="profile_picture"
               className="relative cursor-pointer"
             >
-              {(editForm.profile_picture || user?.profile_picture) && (
+              {profilePreview && (
                 <img
                   loading="lazy"
-                  src={
-                    editForm.profile_picture
-                      ? URL.createObjectURL(editForm.profile_picture)
-                      : user.profile_picture
-                  }
+                  src={profilePreview}
                   alt="Profile"
                   className="w-40 h-40 rounded-full border-4 border-white object-cover"
                 />
@@ -124,16 +147,7 @@ const ProfileModel = ({ setShowEdit }) => {
           Edit Profile
         </h1>
 
-        <form
-          className="space-y-4"
-          onSubmit={(e) =>
-            toast.promise(handleSaveProfile(e), {
-              loading: "Saving...",
-              success: "Profile updated!",
-              error: "Failed to update profile.",
-            })
-          }
-        >
+        <form className="space-y-4" onSubmit={handleSaveProfile}>
           {["full_name", "username", "location"].map((field) => (
             <div key={field}>
               <label className="block text-sm font-medium text-gray-800 mb-2">

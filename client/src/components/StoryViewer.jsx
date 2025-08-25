@@ -26,6 +26,7 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
     };
   }, [viewStory, setViewStory]);
 
+  // Determine if background is light for text color
   useEffect(() => {
     if (!viewStory?.background_color) return;
 
@@ -46,7 +47,7 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
         return (
           <img
             src={viewStory.media_url}
-            alt=""
+            alt={viewStory.content || "Story image"}
             loading="lazy"
             className="w-full h-full object-contain rounded-2xl shadow-2xl"
           />
@@ -57,6 +58,7 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
             src={viewStory.media_url}
             autoPlay
             playsInline
+            controls
             className="w-full h-full rounded-2xl shadow-2xl"
             onEnded={() => setViewStory(null)}
           />

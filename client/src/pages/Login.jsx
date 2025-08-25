@@ -1,12 +1,12 @@
-import { Star } from "lucide-react";
 import React, { useState } from "react";
+import { Star } from "lucide-react";
 import { SignIn, SignUp } from "@clerk/clerk-react";
 import bgImage from "../assets/bgImage.png";
 import logo from "../assets/logo.svg";
 import group_users from "../assets/group_users.png";
 
 const Login = () => {
-  const [isSignUp, setIsSignUp] = useState(false); // toggle state
+  const [isSignUp, setIsSignUp] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row relative">
@@ -57,7 +57,6 @@ const Login = () => {
         <p className="text-xl md:text-3xl text-[#019ccf] max-w-72 md:max-w-md">
           Connect with global community on Social-Circle
         </p>
-
         <span className="md:h-10" />
       </div>
 
@@ -94,7 +93,7 @@ const Login = () => {
             />
           )}
 
-          <p className="text-center text-sm pb-[2rem] f">
+          <p className="text-center text-sm pb-[2rem]">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <button
               className="text-blue-600 font-semibold hover:underline cursor-pointer"
