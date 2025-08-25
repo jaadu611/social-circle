@@ -7,25 +7,21 @@ const AnimatedHeart = ({ size = 24, liked = false, onClick }) => {
   const handleClick = () => {
     onClick?.();
 
-    // Trigger bounce
     setIsBouncing(false);
     setTimeout(() => setIsBouncing(true), 10);
     setTimeout(() => setIsBouncing(false), 600);
 
-    // Only create particles if liking
     if (!liked) {
       const newParticles = Array.from({ length: 8 }, (_, i) => ({
-        id: Date.now() + i, // unique id for each particle burst
+        id: Date.now() + i,
         angle: i * 45 + Math.random() * 20 - 10,
         distance: 30 + Math.random() * 20,
         delay: Math.random() * 200,
         size: 2 + Math.random() * 3,
       }));
 
-      // Append new particles without removing existing bursts
       setParticles((prev) => [...prev, ...newParticles]);
 
-      // Clean up particles after animation
       setTimeout(() => {
         setParticles((prev) => prev.filter((p) => !newParticles.includes(p)));
       }, 800);
