@@ -1,10 +1,6 @@
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  Heart,
-  MessageCircle,
-  Share2,
-  Trash2,
 } from "lucide-react";
 import moment from "moment";
 import DOMPurify from "dompurify";
@@ -16,6 +12,10 @@ import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
 import { toast } from "react-hot-toast";
 import Loading from "./Loading.jsx";
+import AnimatedTrash from "./AnimatedTrash.jsx";
+import AnimatedHeart from "./AnimatedHeart.jsx";
+import AnimatedShare from "./AnimatedShare.jsx";
+import AnimatedMessageCircle from "./AnimatedMessageCircle.jsx";
 
 const PostCard = ({ post, activeLink = true, onDelete }) => {
   const navigate = useNavigate();
@@ -23,6 +23,7 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
   const [likes, setLikes] = useState(post.likes_count || []);
   const [shares, setShares] = useState(post.shares_count || 0);
   const currentUser = useSelector((state) => state.user.value);
+  const [hover, setHover] = useState(false);
   const [loading, setLoading] = useState(
     Array.isArray(post.image_urls) && post.image_urls.length > 0
   );
@@ -46,26 +47,39 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
     );
 
   const handleLike = async () => {
-    const token = await getToken();
+    const alreadyLiked = likes.includes(currentUser?._id);
+
+    setLikes((prev) =>
+      alreadyLiked
+        ? prev.filter((id) => id !== currentUser._id)
+        : [...(prev || []), currentUser._id]
+    );
 
     try {
+      const token = await getToken();
       const { data } = await api.post(
         `/api/post/like/${post._id}`,
         {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (data.success) {
-        setLikes((prev) => {
-          if (prev.includes(currentUser?._id)) {
-            return prev.filter((id) => id !== currentUser._id);
-          } else {
-            return [...prev, currentUser._id];
-          }
-        });
+
+      if (data.success && data.likes) {
+        setLikes(data.likes);
+      } else if (!data.success) {
+        setLikes((prev) =>
+          alreadyLiked
+            ? [...prev, currentUser._id]
+            : prev.filter((id) => id !== currentUser._id)
+        );
+        toast.error(data.message || "Failed to like post");
       }
     } catch (error) {
+      // Revert UI on error
+      setLikes((prev) =>
+        alreadyLiked
+          ? [...prev, currentUser._id]
+          : prev.filter((id) => id !== currentUser._id)
+      );
       toast.error(error.response?.data?.message || error.message);
     }
   };
@@ -137,7 +151,7 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 space-y-4 w-full min-w-[100px] sm:min-w-[120px] max-w-[calc(100vw-2rem)] transform-gpu"
+      className="bg-white rounded-2xl shadow-lg px-4 py-3 space-y-4 w-full min-w-[100px] sm:min-w-[120px] max-w-[calc(100vw-2rem)] transform-gpu"
       style={{ willChange: "transform" }}
     >
       {/* User Header */}
@@ -230,37 +244,33 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
 
       {/* Post Actions */}
       <div className="flex items-center justify-between border-t border-gray-200">
-        <div className="flex flex-wrap items-center gap-5 text-gray-600 text-sm pt-5">
+        <div className="flex flex-wrap items-center gap-3 text-gray-600 text-sm pt-5">
           <div className="flex items-center gap-1">
-            <Heart
+            <AnimatedHeart
               onClick={handleLike}
               role="button"
               aria-label="Like post"
-              className={`w-5 h-5 cursor-pointer transition-colors duration-200 ${
-                likes.includes(currentUser?._id)
-                  ? "text-red-500 fill-red-500"
-                  : "hover:text-red-500"
-              }`}
+              liked={likes.includes(currentUser._id)}
             />
             <span className="w-2 text-center">{likes.length}</span>
           </div>
 
           <div className="flex items-center gap-1">
-            <MessageCircle
+            <AnimatedMessageCircle
               role="button"
               onClick={() => navigate(`/post/${post._id}`)}
               aria-label="Comment on post"
               className="w-5 h-5 cursor-pointer hover:text-indigo-500 transition"
             />
-            <span className="w-2 text-center">{post.comments_count || 0}</span>
+            <span className="w-2 text-center">{post.comments.length || 0}</span>
           </div>
 
           <div className="flex items-center gap-1">
-            <Share2
+            <AnimatedShare
               onClick={handleShare}
               role="button"
               aria-label="Share post"
-              className="w-5 h-5 cursor-pointer hover:text-indigo-500 transition"
+              className="cursor-pointer"
             />
             <span className="w-2 text-center">{shares}</span>
           </div>
@@ -268,10 +278,12 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
         {currentUser?._id === post.user?._id && (
           <button
             onClick={handleDelete}
-            className="p-1 hover:bg-red-100 rounded-full transition mt-5 cursor-pointer"
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            className="p-1 hover:bg-red-100 rounded-full transition mt-2 cursor-pointer"
             title="Delete post"
           >
-            <Trash2 className="w-5 h-5 text-red-500" />
+            <AnimatedTrash className="w-8 h-8" hover={hover} />
           </button>
         )}
       </div>

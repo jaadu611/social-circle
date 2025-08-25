@@ -88,36 +88,40 @@ export const likePost = async (req, res) => {
     const { userId } = req.auth();
     const { postId } = req.params;
 
-    const post = await Post.findById(postId);
-    if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: "Post not found",
-      });
-    }
+    let post = await Post.findOneAndUpdate(
+      { _id: postId, likes_count: { $ne: userId } },
+      { $push: { likes_count: userId } },
+      { new: true }
+    );
 
-    if (post.likes_count.includes(userId)) {
-      post.likes_count.pull(userId);
-      await post.save();
+    if (!post) {
+      post = await Post.findOneAndUpdate(
+        { _id: postId, likes_count: userId },
+        { $pull: { likes_count: userId } },
+        { new: true }
+      );
+
+      if (!post) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Post not found" });
+      }
+
       return res.status(200).json({
         success: true,
         message: "Post unliked successfully",
-      });
-    } else {
-      post.likes_count.push(userId);
-      await post.save();
-
-      res.status(200).json({
-        success: true,
-        message: "Post liked successfully",
+        likes_count: post.likes_count,
       });
     }
+
+    res.status(200).json({
+      success: true,
+      message: "Post liked successfully",
+      likes_count: post.likes_count,
+    });
   } catch (error) {
     console.error("Error liking post:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error liking post",
-    });
+    res.status(500).json({ success: false, message: "Error liking post" });
   }
 };
 

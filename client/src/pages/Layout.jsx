@@ -15,7 +15,7 @@ const Layout = () => {
     return (
       <Icon
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="absolute top-3 right-2 z-50 w-9 h-9 p-2 rounded-md bg-white shadow text-gray-600 transition-all duration-200 hover:bg-gray-100 active:scale-95 sm:hidden"
+        className="absolute top-3 cursor-pointer right-2 z-50 w-9 h-9 p-2 rounded-md bg-white shadow text-gray-600 transition-all duration-200 hover:bg-gray-100 active:scale-95 sm:hidden"
       />
     );
   }, [sidebarOpen]);

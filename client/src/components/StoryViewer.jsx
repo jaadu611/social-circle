@@ -26,7 +26,6 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
     };
   }, [viewStory, setViewStory]);
 
-  // Determine if background is light for text contrast
   useEffect(() => {
     if (!viewStory?.background_color) return;
 

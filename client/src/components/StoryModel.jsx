@@ -210,7 +210,7 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
               loading: "Saving...",
             })
           }
-          className="flex items-center justify-center gap-2 w-full mt-4 py-3 rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition"
+          className="flex items-center justify-center cursor-pointer gap-2 w-full mt-4 py-3 rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition"
         >
           <Sparkle size={18} /> Create Story
         </button>

@@ -37,7 +37,7 @@ const StoriesBar = () => {
 
   return (
     <div className="w-full overflow-x-auto ">
-      <div className="inline-flex gap-3 sm:gap-4 md:gap-5 pb-2 sm:pb-3">
+      <div className="inline-flex gap-3 sm:gap-4 md:gap-5">
         {/* Create Story */}
         <motion.div
           layout
@@ -68,7 +68,7 @@ const StoriesBar = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               onClick={() => setViewStory(story)}
-              className="relative shrink-0 w-[90px] sm:w-[100px] md:w-[110px] aspect-[3/4] rounded-xl overflow-hidden cursor-pointer group will-change-transform transform-gpu hover:shadow-md hover:shadow-black/40 transition-all duration-300 border-2 border-gray-500/40"
+              className="relative shrink-0 w-[90px] sm:w-[100px] md:w-[110px] aspect-[3/4] rounded-xl overflow-hidden cursor-pointer group will-change-transform transform-gpu transition-all duration-300 border-2 border-gray-500/40"
             >
               {/* Media */}
               {story.media_type !== "text" && story.media_url && (
@@ -115,7 +115,7 @@ const StoriesBar = () => {
                   src={story.user.profile_picture}
                   alt=""
                   loading="lazy"
-                  className="absolute top-2 left-2 size-8 rounded-full ring-2 ring-white shadow-md z-30 transition-all duration-300 group-hover:ring-amber-400"
+                  className="absolute top-2 left-2 size-8 rounded-full ring-2 shadow-md z-30 transition-all duration-300 ring-amber-400"
                 />
               )}
 

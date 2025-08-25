@@ -1,10 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import MenuItems from "./MenuItems";
-import { CirclePlus, LogOut } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 import { useClerk, UserButton } from "@clerk/clerk-react";
 import { useSelector } from "react-redux";
 import logo from "../assets/logo.svg";
+import LogOutAnimated from "./LogOutAnimated";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const user = useSelector((state) => state.user?.value);
@@ -15,7 +16,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
   return (
     <div
-      className={`bg-white border-r border-gray-200 h-full flex flex-col justify-between max-sm:absolute top-0 bottom-0 z-50 w-60 md:w-52 sm:w-48 max-[400px]:w-44 xl:w-72 min-w-[12rem] transition-transform duration-300 ease-in-out ${
+      className={`bg-white border-r border-gray-200 h-full flex flex-col justify-between max-sm:absolute top-0 bottom-0 z-50 w-60 max-[400px]:w-44 xl:w-72 min-w-[12rem] transition-transform duration-300 ease-in-out ${
         sidebarOpen ? "translate-x-0" : "max-sm:-translate-x-full"
       }`}
     >
@@ -70,7 +71,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           title="Sign Out"
           aria-label="Sign Out"
         >
-          <LogOut className="w-4 h-4 sm:h-4 sm:w-4 md:h-5 md:w-5 text-gray-600 group-hover:text-red-500 transition-all duration-200" />
+          <LogOutAnimated className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 hover:text-red-500 cursor-pointer" />
         </button>
       </div>
     </div>

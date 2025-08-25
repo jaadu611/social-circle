@@ -1,12 +1,5 @@
 import React, { useState, useMemo } from "react";
-import {
-  Calendar,
-  MapPin,
-  MessageCircle,
-  PenBox,
-  UserPlus,
-  UserX,
-} from "lucide-react";
+import { Calendar, MapPin, PenBox, UserPlus, UserX } from "lucide-react";
 import moment from "moment";
 import { useAuth } from "@clerk/clerk-react";
 import { useSelector, useDispatch } from "react-redux";
@@ -14,6 +7,7 @@ import { fetchConnections } from "../features/connectionSlice";
 import api from "../api/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import AnimatedMessageCircle from "./AnimatedMessageCircle";
 
 const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
   const { getToken } = useAuth();
@@ -208,7 +202,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
                 >
                   {isConnected ? (
                     <>
-                      <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                      <AnimatedMessageCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                       <span className="leading-none">Message</span>
                     </>
                   ) : (

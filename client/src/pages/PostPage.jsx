@@ -55,7 +55,7 @@ const PostPage = () => {
         <p className="text-gray-500 text-lg sm:text-xl mb-4">Post not found</p>
         <button
           onClick={() => navigate(-1)}
-          className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition"
+          className="px-4 py-2 bg-indigo-500 text-white rounded-md cursor-pointer hover:bg-indigo-600 transition"
         >
           Go Back
         </button>
@@ -63,8 +63,9 @@ const PostPage = () => {
     );
 
   return (
-    <div className="mx-auto mt-6 px-4">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="flex flex-col h-screen mx-auto p-4">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
         <button
           onClick={() => navigate(-1)}
           className="p-2 rounded-full hover:bg-gray-200 transition"
@@ -74,8 +75,15 @@ const PostPage = () => {
         <h1 className="text-xl sm:text-2xl font-semibold">Post</h1>
       </div>
 
-      <PostWithComments post={post} />
-      <Comments postId={post._id} />
+      {/* Post stays fixed at the top */}
+      <div className="flex-shrink-0 mb-4">
+        <PostWithComments post={post} />
+      </div>
+
+      {/* Comments scrollable */}
+      <div className="flex-1 overflow-y-auto">
+        <Comments postId={post._id}/>
+      </div>
     </div>
   );
 };

@@ -1,11 +1,4 @@
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  Heart,
-  MessageCircle,
-  Share2,
-  Trash2,
-} from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import moment from "moment";
 import DOMPurify from "dompurify";
 import React, { useState } from "react";
@@ -16,6 +9,9 @@ import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
 import { toast } from "react-hot-toast";
 import Loading from "./Loading.jsx";
+import AnimatedTrash from "./AnimatedTrash.jsx";
+import AnimatedHeart from "./AnimatedHeart.jsx";
+import AnimatedShare from "./AnimatedShare.jsx";
 
 const PostWithComments = ({ post, activeLink = true, onDelete }) => {
   const navigate = useNavigate();
@@ -27,6 +23,7 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
     Array.isArray(post.image_urls) && post.image_urls.length > 0
   );
   const { getToken } = useAuth();
+  const [hover, setHover] = useState(false);
 
   const formatHashtags = (html) =>
     html.replace(
@@ -46,9 +43,17 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
     );
 
   const handleLike = async () => {
-    const token = await getToken();
+    // Optimistic update: toggle like immediately
+    setLikes((prev) => {
+      if (prev.includes(currentUser?._id)) {
+        return prev.filter((id) => id !== currentUser._id);
+      } else {
+        return [...(prev || []), currentUser._id];
+      }
+    });
 
     try {
+      const token = await getToken();
       const { data } = await api.post(
         `/api/post/like/${post._id}`,
         {},
@@ -56,17 +61,21 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      if (data.success) {
-        setLikes((prev) => {
-          if (prev.includes(currentUser?._id)) {
-            return prev.filter((id) => id !== currentUser._id);
-          } else {
-            return [...prev, currentUser._id];
-          }
-        });
+
+      // Sync with backend in case counts differ
+      if (data.success && data.likes) {
+        setLikes(data.likes);
       }
     } catch (error) {
+      // Revert UI if API fails
       toast.error(error.response?.data?.message || error.message);
+      setLikes((prev) => {
+        if (prev.includes(currentUser?._id)) {
+          return prev.filter((id) => id !== currentUser._id);
+        } else {
+          return [...(prev || []), currentUser._id];
+        }
+      });
     }
   };
 
@@ -138,7 +147,7 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 space-y-4 w-full min-w-[100px] sm:min-w-[120px] max-w-[calc(100vw-2rem)] transform-gpu"
+      className="bg-white rounded-2xl shadow-lg px-4 py-3 space-y-4 w-full min-w-[100px] sm:min-w-[120px] max-w-[calc(100vw-2rem)] transform-gpu"
       style={{ willChange: "transform" }}
     >
       {/* User Header */}
@@ -231,27 +240,23 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
 
       {/* Post Actions */}
       <div className="flex items-center justify-between border-t border-gray-200">
-        <div className="flex flex-wrap items-center gap-5 text-gray-600 text-sm pt-5">
+        <div className="flex flex-wrap items-center gap-3 text-gray-600 text-sm pt-5">
           <div className="flex items-center gap-1">
-            <Heart
+            <AnimatedHeart
               onClick={handleLike}
+              liked={likes.includes(currentUser._id)}
               role="button"
               aria-label="Like post"
-              className={`w-5 h-5 cursor-pointer transition-colors duration-200 ${
-                likes.includes(currentUser?._id)
-                  ? "text-red-500 fill-red-500"
-                  : "hover:text-red-500"
-              }`}
             />
             <span className="w-2 text-center">{likes.length}</span>
           </div>
 
           <div className="flex items-center gap-1">
-            <Share2
+            <AnimatedShare
               onClick={handleShare}
               role="button"
               aria-label="Share post"
-              className="w-5 h-5 cursor-pointer hover:text-indigo-500 transition"
+              className="cursor-pointer"
             />
             <span className="w-2 text-center">{shares}</span>
           </div>
@@ -259,10 +264,12 @@ const PostWithComments = ({ post, activeLink = true, onDelete }) => {
         {currentUser?._id === post.user?._id && (
           <button
             onClick={handleDelete}
-            className="p-1 hover:bg-red-100 rounded-full transition mt-5 cursor-pointer"
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            className="p-2 rounded-full transition mt-2 cursor-pointer hover:bg-red-100"
             title="Delete post"
           >
-            <Trash2 className="w-5 h-5 text-red-500" />
+            <AnimatedTrash className="w-6 h-6 sm:w-8 sm:h-8" hover={hover} />
           </button>
         )}
       </div>

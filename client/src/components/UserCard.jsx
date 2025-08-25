@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import {
   MapPin,
-  MessageCircle,
   PlusCircle,
   UserCheck,
   UserPlus,
@@ -11,6 +10,7 @@ import { useSelector } from "react-redux";
 import { useAuth } from "@clerk/clerk-react";
 import api from "../api/axios.js";
 import { toast } from "react-hot-toast";
+import AnimatedMessageCircle from "./AnimatedMessageCircle.jsx";
 
 const UserCard = ({ user }) => {
   const currentUser = useSelector((state) => state.user.value);
@@ -164,7 +164,7 @@ const UserCard = ({ user }) => {
         >
           {isConnected ? (
             <>
-              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform flex-shrink-0" />
+              <AnimatedMessageCircle className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform flex-shrink-0" />
               <span className="text-[10px] xs:text-xs sm:text-sm whitespace-nowrap leading-none">
                 Message
               </span>

@@ -24,45 +24,37 @@ export const likeComment = async (req, res) => {
     const { postId, commentId } = req.params;
     const userId = req.user.id;
 
-    // Find the post with the comment
-    const post = await Post.findById(postId);
+    // Try to add user to likes if not already there
+    let post = await Post.findOneAndUpdate(
+      {
+        _id: postId,
+        "comments._id": commentId,
+        "comments.likes": { $ne: userId },
+      },
+      { $push: { "comments.$.likes": userId } },
+      { new: true }
+    );
+
     if (!post) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Post not found" });
+      // If user already liked, remove from likes
+      post = await Post.findOneAndUpdate(
+        { _id: postId, "comments._id": commentId, "comments.likes": userId },
+        { $pull: { "comments.$.likes": userId } },
+        { new: true }
+      );
     }
 
-    // Find the specific comment
-    const comment = post.comments.id(commentId);
-    if (!comment) {
+    if (!post) {
       return res
         .status(404)
         .json({ success: false, message: "Comment not found" });
     }
 
-    // Toggle like
-    const alreadyLiked = comment.likes.some(
-      (id) => id.toString() === userId.toString()
-    );
-
-    if (alreadyLiked) {
-      comment.likes = comment.likes.filter(
-        (id) => id.toString() !== userId.toString()
-      );
-    } else {
-      comment.likes.push(userId);
-    }
-
-    // Save the post (which includes the updated comment)
-    await post.save();
-
-    res.status(200).json({
-      success: true,
-      likes: comment.likes,
-    });
+    const comment = post.comments.find((c) => c._id.toString() === commentId);
+    res.json({ success: true, likes: comment.likes });
   } catch (err) {
     console.error("Error liking comment:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
