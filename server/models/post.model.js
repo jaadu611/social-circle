@@ -1,5 +1,27 @@
 import mongoose from "mongoose";
 
+const commentSchema = new mongoose.Schema(
+  {
+    user: {
+      type: String,
+      ref: "User",
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    likes: [
+      {
+        type: String,
+        ref: "User",
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
 const postSchema = new mongoose.Schema(
   {
     user: {
@@ -30,6 +52,7 @@ const postSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    comments: [commentSchema],
   },
   { timestamps: true, minimize: false }
 );

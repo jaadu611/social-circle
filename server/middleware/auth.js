@@ -3,5 +3,6 @@ export const protect = async (req, res, next) => {
   if (!userId) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
+  req.user = { id: userId };
   next();
 };

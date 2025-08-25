@@ -62,6 +62,7 @@ const CreatePost = () => {
             <img
               src={user.profile_picture}
               alt="Profile"
+              loading="lazy"
               className="w-14 h-14 rounded-full border border-gray-300 object-cover"
             />
           )}
@@ -96,6 +97,7 @@ const CreatePost = () => {
                   <img
                     src={URL.createObjectURL(image)}
                     alt={`upload-${i}`}
+                    loading="lazy"
                     className="h-full object-contain transition-transform border-2 border-gray-300 rounded-md"
                   />
                   <button

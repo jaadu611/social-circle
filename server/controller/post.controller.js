@@ -125,7 +125,6 @@ export const getPostById = async (req, res) => {
   try {
     const { postId } = req.params;
 
-    // Find the post
     const post = await Post.findById(postId);
     if (!post) {
       return res
@@ -133,13 +132,10 @@ export const getPostById = async (req, res) => {
         .json({ success: false, message: "Post not found" });
     }
 
-    // Increment the share count
-    post.shares_count = (post.shares_count || 0) + 1;
-    await post.save();
-
-    // Populate user fields
-    const populatedPost = await post
-      .populate("user", "full_name username profile_picture")
+    const populatedPost = await post.populate(
+      "user",
+      "full_name username profile_picture"
+    );
 
     res.status(200).json({ success: true, post: populatedPost.toObject() });
   } catch (error) {
@@ -180,5 +176,29 @@ export const deletePost = async (req, res) => {
       success: false,
       message: "Internal server error",
     });
+  }
+};
+
+export const sharePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    post.shares_count = (post.shares_count || 0) + 1;
+
+    await post.save();
+
+    return res.status(200).json({
+      message: "Post share recorded successfully",
+      shares_count: post.shares_count,
+    });
+  } catch (error) {
+    console.error("Error sharing post:", error);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };

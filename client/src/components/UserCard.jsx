@@ -34,7 +34,6 @@ const UserCard = ({ user }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (data.success) {
-        toast.success(data.message);
         setIsFollowing(true);
       } else {
         toast.error(data.message);
@@ -53,7 +52,6 @@ const UserCard = ({ user }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (data.success) {
-        toast.success(data.message);
         setIsFollowing(false);
       } else {
         toast.error(data.message);
@@ -96,6 +94,7 @@ const UserCard = ({ user }) => {
                 src={user.profile_picture}
                 alt={user.full_name || "User"}
                 className="w-16 h-16 rounded-full shadow object-cover"
+                loading="lazy"
               />
             )}
           </div>

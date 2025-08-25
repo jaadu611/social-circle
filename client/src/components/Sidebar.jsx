@@ -25,6 +25,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             src={logo}
             className="h-8 sm:h-9 md:h-10 w-auto cursor-pointer"
             alt="logo"
+            loading="lazy"
           />
         </Link>
 

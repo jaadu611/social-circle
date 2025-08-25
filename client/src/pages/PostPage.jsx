@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import PostCard from "../components/PostCard";
 import api from "../api/axios";
 import Loading from "../components/Loading";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@clerk/clerk-react";
 import { ChevronLeft } from "lucide-react";
+import PostWithComments from "../components/PostWithComments";
+import Comments from "../components/Comments";
 
 const PostPage = () => {
   const { postId } = useParams();
@@ -62,7 +63,7 @@ const PostPage = () => {
     );
 
   return (
-    <div className="max-w-3xl mx-auto mt-6 px-4">
+    <div className="mx-auto mt-6 px-4">
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -73,7 +74,8 @@ const PostPage = () => {
         <h1 className="text-xl sm:text-2xl font-semibold">Post</h1>
       </div>
 
-      <PostCard post={post} activeLink={false} />
+      <PostWithComments post={post} />
+      <Comments postId={post._id} />
     </div>
   );
 };

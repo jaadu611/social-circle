@@ -17,7 +17,7 @@ import api from "../api/axios.js";
 import { toast } from "react-hot-toast";
 import Loading from "./Loading.jsx";
 
-const PostCard = ({ post, activeLink = true, onDelete }) => {
+const PostWithComments = ({ post, activeLink = true, onDelete }) => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likes, setLikes] = useState(post.likes_count || []);
@@ -120,6 +120,7 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
       if (data.success) {
         toast.success("Post deleted successfully!");
         if (onDelete) onDelete(post._id);
+        navigate("/");
       } else {
         toast.error(data.message || "Failed to delete post");
       }
@@ -246,16 +247,6 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
           </div>
 
           <div className="flex items-center gap-1">
-            <MessageCircle
-              role="button"
-              onClick={() => navigate(`/post/${post._id}`)}
-              aria-label="Comment on post"
-              className="w-5 h-5 cursor-pointer hover:text-indigo-500 transition"
-            />
-            <span className="w-2 text-center">{post.comments_count || 0}</span>
-          </div>
-
-          <div className="flex items-center gap-1">
             <Share2
               onClick={handleShare}
               role="button"
@@ -279,4 +270,4 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
   );
 };
 
-export default PostCard;
+export default PostWithComments;

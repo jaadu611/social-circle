@@ -77,6 +77,7 @@ const StoriesBar = () => {
                     <img
                       src={story.media_url}
                       alt=""
+                      loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                     />
                   ) : (
@@ -113,6 +114,7 @@ const StoriesBar = () => {
                 <img
                   src={story.user.profile_picture}
                   alt=""
+                  loading="lazy"
                   className="absolute top-2 left-2 size-8 rounded-full ring-2 ring-white shadow-md z-30 transition-all duration-300 group-hover:ring-amber-400"
                 />
               )}

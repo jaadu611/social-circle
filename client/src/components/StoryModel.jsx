@@ -144,6 +144,7 @@ const StoryModel = ({ setShowModel, fetchStories }) => {
                   src={previewUrl}
                   alt=""
                   className="h-full object-contain"
+                  loading="lazy"
                 />
               ) : (
                 <video

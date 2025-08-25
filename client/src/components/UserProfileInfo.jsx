@@ -44,7 +44,6 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (data.success) {
-        toast.success(data.message);
         setIsFollowing(true);
         dispatch(fetchConnections(token));
       } else {
@@ -64,7 +63,6 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (data.success) {
-        toast.success(data.message);
         setIsFollowing(false);
         dispatch(fetchConnections(token));
       } else {
@@ -118,6 +116,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
                 src={user.profile_picture}
                 alt={user.full_name || "User"}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             )}
           </div>

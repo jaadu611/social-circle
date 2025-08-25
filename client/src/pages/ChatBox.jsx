@@ -162,6 +162,7 @@ const ChatBox = () => {
           src={chatUser.profile_picture}
           alt="User Avatar"
           className="h-11 w-11 rounded-full border-2 border-indigo-500"
+          loading="lazy"
         />
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -195,6 +196,7 @@ const ChatBox = () => {
                   src={chatUser.profile_picture}
                   alt="sender"
                   className="h-8 w-8 rounded-full mr-2 mt-1 object-cover"
+                  loading="lazy"
                 />
               )}
               <div className="flex flex-col max-w-[70%]">
@@ -210,6 +212,7 @@ const ChatBox = () => {
                       src={message.media_url}
                       alt="uploaded"
                       className="w-full max-h-60 object-cover rounded-lg my-2"
+                      loading="lazy"
                     />
                   )}
                   {message.text && <p>{message.text}</p>}
@@ -240,6 +243,7 @@ const ChatBox = () => {
               src={URL.createObjectURL(image)}
               alt="preview"
               className="h-10 w-10 rounded object-cover"
+              loading="lazy"
             />
           ) : (
             <Image className="h-6 w-6 text-gray-400" />

@@ -74,6 +74,7 @@ const ProfileModel = ({ setShowEdit }) => {
                     ? URL.createObjectURL(editForm.cover_photo)
                     : user.cover_photo
                 }
+                loading="lazy"
                 alt="Cover"
                 className="w-full h-full object-cover"
               />
@@ -102,6 +103,7 @@ const ProfileModel = ({ setShowEdit }) => {
             >
               {(editForm.profile_picture || user?.profile_picture) && (
                 <img
+                  loading="lazy"
                   src={
                     editForm.profile_picture
                       ? URL.createObjectURL(editForm.profile_picture)

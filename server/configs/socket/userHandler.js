@@ -54,7 +54,6 @@ export const socketHandlers = (io, socket) => {
 
   // Handle disconnect
   socket.on("disconnect", () => {
-    // Find which user disconnected
     let disconnectedUserId = null;
     for (const [userId, id] of Object.entries(onlineUsers)) {
       if (id === socket.id) {
@@ -64,8 +63,6 @@ export const socketHandlers = (io, socket) => {
       }
     }
     if (disconnectedUserId) {
-      console.log("User disconnected:", disconnectedUserId);
-      // Broadcast updated online users
       io.emit("onlineUsers", Object.keys(onlineUsers));
     }
   });

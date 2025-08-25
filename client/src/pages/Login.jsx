@@ -22,9 +22,9 @@ const Login = () => {
       <div className="flex-1 flex flex-col items-start justify-between p-4 md:p-10 lg:pl-40 relative z-10">
         <img
           src={logo}
+          loading="lazy"
           alt="logo"
           className="h-16 object-contain"
-          loading="lazy"
         />
 
         <div className="flex items-center gap-3 mb-4 max-md:mt-10">

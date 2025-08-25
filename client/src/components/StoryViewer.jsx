@@ -48,6 +48,7 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
           <img
             src={viewStory.media_url}
             alt=""
+            loading="lazy"
             className="w-full h-full object-contain rounded-2xl shadow-2xl"
           />
         );
@@ -97,6 +98,7 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
             <img
               src={viewStory.user.profile_picture}
               alt={viewStory.user.full_name || "User"}
+              loading="lazy"
               className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white/70 shadow-md"
             />
           )}

@@ -63,10 +63,28 @@ const Feed = () => {
   if (loading) return <Loading />;
 
   return (
-    <div className="p-4 flex justify-center xl:justify-between gap-4 max-w-7xl mx-auto">
-      <div className="flex-1 w-full">
-        <StoriesBar />
-        <div className="space-y-6">{feedItems}</div>
+    <div className="p-4 flex justify-center xl:justify-between gap-6 mx-auto flex-1 h-full">
+      <div className="flex-1 w-full flex flex-col">
+        {/* Stories */}
+        <div className="mb-6">
+          <StoriesBar />
+        </div>
+
+        {/* Feed */}
+        <div className="space-y-6 border-t border-gray-200 pt-6 flex-1 flex flex-col">
+          {feedItems.length > 0 ? (
+            feedItems
+          ) : (
+            <div className="flex-1">
+              <p className="flex items-center justify-center pb-30 flex-col text-gray-500 py-10 bg-gray-50 rounded-xl shadow-lg h-full w-full border border-gray-200">
+                No Posts Yet 🙁 <br />
+                <span className="text-sm text-gray-400">
+                  Follow others to see their posts
+                </span>
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -63,7 +63,6 @@ const Connections = () => {
         { headers: { Authorization: `Bearer ${await getToken()}` } }
       );
       if (data.success) {
-        toast.success(data.message);
         dispatch(fetchConnections(await getToken()));
       } else toast.error(data.message);
     } catch (error) {
@@ -134,6 +133,7 @@ const Connections = () => {
                 <img
                   src={user.profile_picture}
                   alt="Profile"
+                  loading="lazy"
                   className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-md group-hover:ring-2 group-hover:ring-indigo-600 transition-all duration-200"
                 />
               )}
