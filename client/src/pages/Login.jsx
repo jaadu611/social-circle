@@ -33,7 +33,6 @@ const Login = () => {
             alt="users-images"
             className="h-8 md:h-10"
             loading="lazy"
-            width={40}
             height={40}
           />
           <div className="flex flex-col">
