@@ -93,7 +93,7 @@ const ProfileModel = ({ setShowEdit }) => {
           />
           <label
             htmlFor="cover_photo"
-            className="relative w-full h-full cursor-pointer"
+            className="relative w-full h-full cursor-pointer group"
           >
             {!coverPreview && (
               <div className="w-full h-full bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200" />
@@ -106,14 +106,16 @@ const ProfileModel = ({ setShowEdit }) => {
                 className="w-full h-full object-cover"
               />
             )}
-            <div className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-black/20">
-              <Pencil className="w-5 h-5 text-white" />
+
+            {/* Pencil in top-right */}
+            <div className="absolute top-3 right-3 hidden group-hover:flex items-center justify-center bg-black/40 p-2 rounded-full">
+              <Pencil className="w-4 h-4 text-white" />
             </div>
           </label>
         </div>
 
         {/* Profile Picture */}
-        <div className="-mt-12 mb-4 w-full flex justify-center">
+        <div className="-mt-21 mb-4 w-full flex justify-center">
           <div className="relative group">
             <input
               type="file"
@@ -191,13 +193,13 @@ const ProfileModel = ({ setShowEdit }) => {
             <button
               type="button"
               onClick={() => setShowEdit(false)}
-              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              className="px-6 py-2 bg-red-500 cursor-pointer text-white rounded-lg hover:bg-red-600 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-colors"
+              className="px-6 py-2 bg-gradient-to-r cursor-pointer from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-colors"
             >
               Save Changes
             </button>

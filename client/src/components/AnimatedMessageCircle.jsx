@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 
-const AnimatedMessageCircle = ({ size = 140, className = "" }) => {
+const AnimatedMessageCircle = ({ size = 140, className = "", onClick }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  // scale factor for internal elements
   const scale = size / 90;
 
   return (
@@ -13,15 +12,15 @@ const AnimatedMessageCircle = ({ size = 140, className = "" }) => {
           .icon-container {
             display: inline-flex;
             align-items: center;
-            transform: scale(1.3);
             justify-content: center;
             cursor: pointer;
+            transform: scale(1.4);
             transition: transform 0.15s ease, filter 0.3s ease;
             user-select: none;
           }
 
           .icon-container:hover {
-            transform: translateY(-4px) scale(1.4);
+            transform: translateY(-4px) scale(1.45);
             filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
           }
 
@@ -44,7 +43,10 @@ const AnimatedMessageCircle = ({ size = 140, className = "" }) => {
       </style>
 
       <div
+        role="button"
+        aria-label="Comment"
         className={`icon-container ${className}`}
+        onClick={onClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >

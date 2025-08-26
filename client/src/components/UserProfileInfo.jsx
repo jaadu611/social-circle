@@ -73,7 +73,7 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
 
   return (
     <div className="rounded-xl shadow-lg">
-      <div className="relative max-w-5xl mx-auto p-6 sm:p-8 md:p-10">
+      <div className="relative mx-auto p-6 sm:p-8 md:p-10">
         {/* Edit Button */}
         {isOwnProfile && (
           <button
@@ -86,9 +86,10 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
         )}
 
         {/* Profile Info */}
-        <div className="flex flex-col bp-411:flex-row items-center bp-411:items-start gap-6">
+        <div className="flex flex-col bp-411:flex-row items-center bp-411:items-start">
           {/* Avatar */}
-          <div className="flex-shrink-0 w-32 h-32 rounded-full overflow-hidden border-4 border-white -mt-24 md:-mt-26 relative z-10">
+          <div className="flex-shrink-0 w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white -mt-24 relative z-10">
+            {/* Profile image */}
             {user?.profile_picture && (
               <img
                 src={user.profile_picture}

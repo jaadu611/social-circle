@@ -20,7 +20,7 @@ const LogOutAnimated = ({ className }) => {
       {/* Arrow (animated) */}
       <path
         d="M22 17l5-5-5-5M27 12H9"
-        className="transition-transform duration-300 ease-in-out group-hover:translate-x-2"
+        className="transition-transform duration-300 ease-in-out group-hover:translate-x-1"
       />
     </svg>
   );

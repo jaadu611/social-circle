@@ -22,15 +22,17 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
   const currentUser = useSelector((state) => state.user.value);
   const [loading, setLoading] = useState(true);
   const { getToken } = useAuth();
+  const [hover, setHover] = useState(false);
 
   const sanitizedContent = useMemo(() => {
-    const formatHashtags = (html) =>
-      html.replace(
+    if (!post.content) return "";
+    return DOMPurify.sanitize(
+      post.content.replace(
         /#([\p{L}\p{N}_]+)/gu,
         (match) =>
           `<span class="inline-block text-purple-600 font-medium hover:bg-purple-100 px-1 rounded cursor-pointer transition-all duration-150">${match}</span>`
-      );
-    return DOMPurify.sanitize(formatHashtags(post.content || ""));
+      )
+    );
   }, [post.content]);
 
   const prevImage = () =>
@@ -47,7 +49,7 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
     setLikes((prev) =>
       alreadyLiked
         ? prev.filter((id) => id !== currentUser._id)
-        : [...(prev || []), currentUser._id]
+        : [...prev, currentUser._id]
     );
 
     try {
@@ -58,15 +60,13 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (data.success && data.likes) setLikes(data.likes);
-      else throw new Error(data.message || "Failed to like post");
     } catch (error) {
-      // revert UI
+      toast.error(error.response?.data?.message || error.message);
       setLikes((prev) =>
         alreadyLiked
           ? [...prev, currentUser._id]
           : prev.filter((id) => id !== currentUser._id)
       );
-      toast.error(error.response?.data?.message || error.message);
     }
   };
 
@@ -98,7 +98,7 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
     } else {
       try {
         await navigator.clipboard.writeText(postUrl);
-        toast.success("Post URL copied!");
+        toast.success("Post URL copied to clipboard!");
       } catch {
         toast.error("Failed to copy URL");
       }
@@ -114,6 +114,7 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
       if (data.success) {
         toast.success("Post deleted successfully!");
         onDelete?.(post._id);
+        navigate("/");
       } else toast.error(data.message || "Failed to delete post");
     } catch (err) {
       toast.error(
@@ -121,8 +122,6 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
       );
     }
   };
-
-  const isLiked = likes.includes(currentUser?._id);
 
   return (
     <motion.div
@@ -153,9 +152,8 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
             />
           )}
           <div className="flex flex-col justify-center text-sm sm:text-base">
-            <span className="relative w-fit text-gray-700 font-semibold transition-colors duration-200 group-hover:text-indigo-600">
+            <span className="relative w-fit text-gray-700 font-semibold transition-colors duration-200 group-hover:text-indigo-600 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-full after:h-[1.5px] after:bg-indigo-500 after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left">
               {post.user?.full_name}
-              <span className="absolute left-0 bottom-0 w-full h-[1.5px] bg-indigo-500 scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
             </span>
             <span className="text-gray-500 text-xs sm:text-sm">
               @{post.user?.username} • {moment(post.createdAt).fromNow()}
@@ -226,28 +224,20 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
         </div>
       )}
 
-      {/* Actions */}
+      {/* Post Actions */}
       <div className="flex items-center justify-between border-t border-gray-200 pt-4">
         <div className="flex flex-wrap items-center gap-3 text-gray-600 text-sm">
           <div className="flex items-center gap-1">
             <AnimatedHeart
-              liked={isLiked}
+              liked={likes.includes(currentUser._id)}
               onClick={handleLike}
               role="button"
               aria-label="Like post"
             />
-            <motion.span
-              key={likes.length}
-              className="min-w-[20px] text-center"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
-              {likes.length}
-            </motion.span>
+            <span className="w-2 text-center">{likes.length}</span>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 relative left-[5px]">
             <AnimatedMessageCircle
               role="button"
               onClick={() => navigate(`/post/${post._id}`)}
@@ -265,25 +255,19 @@ const PostCard = ({ post, activeLink = true, onDelete }) => {
               role="button"
               aria-label="Share post"
             />
-            <motion.span
-              key={shares}
-              className="min-w-[20px] text-center"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
-              {shares}
-            </motion.span>
+            <span className="w-2 text-center">{shares}</span>
           </div>
         </div>
 
         {currentUser?._id === post.user?._id && (
           <button
             onClick={handleDelete}
-            className="p-1 hover:bg-red-100 rounded-full transition mt-2 cursor-pointer"
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            className="p-2 rounded-full transition mt-2 cursor-pointer hover:bg-red-100"
             title="Delete post"
           >
-            <AnimatedTrash className="w-8 h-8" />
+            <AnimatedTrash className="w-6 h-6 sm:w-8 sm:h-8" hover={hover} />
           </button>
         )}
       </div>

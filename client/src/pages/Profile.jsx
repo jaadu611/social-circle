@@ -110,100 +110,258 @@ const Profile = () => {
   if (!user) return <Loading />;
 
   return (
-    <div className="relative h-full overflow-y-scroll bg-gray-50 p-6">
-      <div className="max-w-[60vw] mx-auto">
-        <div className="bg-white rounded-2xl shadow overflow-hidden">
-          <div className="h-40 md:h-56 bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
-            {user.cover_photo && (
-              <img
-                src={user.cover_photo}
-                alt=""
-                className="h-full w-full object-cover"
-                loading="lazy"
-                width={600}
-                height={200}
-              />
-            )}
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Hero Section with Cover Photo */}
+      <div className="relative w-full">
+        {/* Cover Photo Container */}
+        
 
-          <UserProfileInfo
-            user={user}
-            posts={posts}
-            profileId={profileId}
-            setShowEdit={setShowEdit}
-          />
-        </div>
-
-        {/* Tabs */}
-        <div className="mt-6">
-          <div className="relative bg-white rounded-xl shadow p-1 flex max-w-sm mx-auto overflow-hidden">
-            <div
-              className={`absolute top-1 left-0 h-[calc(100%-0.5rem)] w-1/2 bg-indigo-600 rounded-lg transition-all duration-300 ease-in-out transform ${
-                activeTab === "Posts"
-                  ? "translate-x-1"
-                  : activeTab === "Media"
-                  ? "translate-x-full"
-                  : "translate-x-[198%]"
-              }`}
-            />
-
-            {["Posts", "Media"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`relative flex-1 px-4 cursor-pointer py-2 text-sm font-medium z-10 transition-colors duration-200 rounded-lg
-                  ${
-                    activeTab === tab
-                      ? "text-white"
-                      : "text-gray-600 hover:text-indigo-600"
-                  }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          {activeTab === "Posts" && (
-            <div className="mt-6 flex flex-col items-center gap-6">
-              {posts.map((post) => (
-                <PostCard key={post._id} post={post} activeLink={false} />
-              ))}
-            </div>
-          )}
-
-          {activeTab === "Media" && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-4 mx-auto">
-              {mediaPosts.length > 0 ? (
-                mediaPosts.map(({ image, postId, createdAt }, index) => (
-                  <Link
-                    target="_blank"
-                    to={image}
-                    key={`${postId}-${index}`}
-                    className="relative group w-full"
-                  >
-                    <img
-                      src={image}
-                      alt=""
-                      className="w-full h-48 sm:h-56 md:h-64 lg:h-72 object-cover rounded-md"
-                      loading="lazy"
-                      width={400}
-                      height={300}
-                    />
-                    <p className="absolute bottom-0 right-0 text-xs p-1 px-3 backdrop-blur-xl text-white opacity-0 group-hover:opacity-100 transition duration-300">
-                      Posted {moment(createdAt).fromNow()}
-                    </p>
-                  </Link>
-                ))
-              ) : (
-                <p className="text-gray-500 text-center col-span-full">
-                  No media yet
-                </p>
+        {/* Profile Info Container - Overlapping the cover photo */}
+        <div className="relative -mt-16 sm:-mt-20 md:-mt-24 lg:-mt-28 z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-36">
+            <div className="relative max-w-7xl h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden rounded-tr-2xl rounded-tl-2xl">
+          {user.cover_photo ? (
+            <img
+              src={user.cover_photo.replace(
+                "/tr:q-100:f-webp:w-1280/",
+                "/tr:q-70:f-webp:w-600/"
               )}
-            </div>
+              alt={`${user.name} Cover`}
+              className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 transform hover:scale-105"
+              loading="lazy"
+              width={1200}
+              height={400}
+            />
+          ) : (
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600" />
           )}
+        </div>
+            <UserProfileInfo
+              user={user}
+              posts={posts}
+              profileId={profileId}
+              setShowEdit={setShowEdit}
+            />
+          </div>
         </div>
       </div>
 
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        {/* Navigation Tabs */}
+        <div className="mt-8 mb-8">
+          <div className="flex justify-center">
+            <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-1.5 shadow-lg border border-white/20">
+              <div className="flex space-x-1">
+                {["Posts", "Media"].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`relative px-6 py-3 rounded-xl font-medium text-sm transition-all duration-300 ease-out ${
+                      activeTab === tab
+                        ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg transform scale-105"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+                    }`}
+                  >
+                    {tab}
+                    {activeTab === tab && (
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 opacity-20 animate-pulse" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-8 xl:col-span-9">
+            {activeTab === "Posts" && (
+              <div className="space-y-6">
+                {posts.length > 0 ? (
+                  posts.map((post, index) => (
+                    <div
+                      key={post._id}
+                      className="transform transition-all duration-300 hover:scale-[1.02]"
+                      style={{
+                        animationDelay: `${index * 100}ms`,
+                      }}
+                    >
+                      <PostCard post={post} activeLink={false} />
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-16">
+                    <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-violet-100 to-indigo-100 rounded-full flex items-center justify-center">
+                      <svg
+                        className="w-12 h-12 text-violet-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"
+                        />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      No posts yet
+                    </h3>
+                    <p className="text-gray-500">
+                      Start sharing your thoughts with the world!
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "Media" && (
+              <div className="space-y-6">
+                {mediaPosts.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                    {mediaPosts.map(({ image, postId, createdAt }, index) => (
+                      <Link
+                        target="_blank"
+                        to={image}
+                        key={`${postId}-${index}`}
+                        className="group relative aspect-square overflow-hidden rounded-2xl bg-gray-100 transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                        style={{
+                          animationDelay: `${index * 50}ms`,
+                        }}
+                      >
+                        <img
+                          src={image}
+                          alt=""
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          loading="lazy"
+                        />
+                        {/* Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        {/* Date Badge */}
+                        <div className="absolute bottom-2 left-2 right-2">
+                          <div className="bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                            <p className="text-xs font-medium text-gray-800 truncate">
+                              {moment(createdAt).fromNow()}
+                            </p>
+                          </div>
+                        </div>
+                        {/* View Icon */}
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="bg-white/90 backdrop-blur-sm rounded-full p-2">
+                            <svg
+                              className="w-4 h-4 text-gray-800"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16">
+                    <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center">
+                      <svg
+                        className="w-12 h-12 text-pink-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      No media yet
+                    </h3>
+                    <p className="text-gray-500">
+                      Share some photos to get started!
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar - Hidden on mobile, visible on large screens */}
+          <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
+            <div className="sticky top-6 space-y-6">
+              {/* Stats Card */}
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Profile Stats
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Total Posts</span>
+                    <span className="font-semibold text-violet-600">
+                      {posts.length}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Media Posts</span>
+                    <span className="font-semibold text-violet-600">
+                      {mediaPosts.length}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Member Since</span>
+                    <span className="font-semibold text-violet-600">
+                      {moment(user.createdAt).format("MMM YYYY")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Activity */}
+              {posts.length > 0 && (
+                <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Recent Activity
+                  </h3>
+                  <div className="space-y-3">
+                    {posts.slice(0, 3).map((post) => (
+                      <div
+                        key={post._id}
+                        className="flex items-start space-x-3"
+                      >
+                        <div className="w-2 h-2 bg-violet-500 rounded-full mt-2 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-600 truncate">
+                            {post.content || "Shared a post"}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {moment(post.createdAt).fromNow()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Profile Edit Modal */}
       {showEdit && <ProfileModel setShowEdit={setShowEdit} />}
     </div>
   );
