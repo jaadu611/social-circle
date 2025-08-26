@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: my-backend
+    env: node
+    root: server
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+
+  - type: web
+    name: my-frontend
+    env: static
+    root: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: build
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
