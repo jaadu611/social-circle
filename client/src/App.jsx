@@ -3,7 +3,6 @@ import React, {
   createContext,
   useRef,
   useMemo,
-  useState,
   Suspense,
   lazy,
 } from "react";
@@ -16,11 +15,10 @@ import Login from "./pages/Login";
 import Layout from "./pages/Layout";
 import { Toaster } from "react-hot-toast";
 import Loading from "./components/Loading";
+import Feed from "./pages/Feed";
 
 import { fetchUser } from "./features/userSlice";
 
-// Lazy-load non-critical pages
-const Feed = lazy(() => import("./pages/Feed"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ChatBox = lazy(() => import("./pages/ChatBox"));
 const Connections = lazy(() => import("./pages/Connections"));
@@ -38,31 +36,28 @@ const App = () => {
   const loading = useSelector((state) => state.user.loading);
 
   const socketRef = useRef(null);
-  const [socketConnected, setSocketConnected] = useState(false);
 
-  // Lazy-init socket only after user logs in and feed is loaded
   useEffect(() => {
-    if (!user || socketRef.current || !socketConnected) return;
+    if (!user || socketRef.current) return;
 
-    socketRef.current = io(import.meta.env.VITE_BASEURL);
-
-    socketRef.current.on("connect", () => {
-      console.log(`User connected with socket id: ${socketRef.current.id}`);
-      setSocketConnected(true);
+    socketRef.current = io(import.meta.env.VITE_BASEURL, {
+      transports: ["websocket"],
     });
 
     return () => {
       socketRef.current?.disconnect();
+      socketRef.current = null;
     };
-  }, [user, socketConnected]);
+  }, [user]);
 
-  // Fetch only critical user data first
+  // Fetch user + connections
   useEffect(() => {
     if (!user) return;
 
     getToken().then((token) => {
-      dispatch(fetchUser(token)); // critical
-      // Lazy-load other data after initial render
+      dispatch(fetchUser(token));
+
+      // Lazy-load connections
       setTimeout(() => {
         import("./features/connectionSlice").then(({ fetchConnections }) => {
           dispatch(fetchConnections(token));

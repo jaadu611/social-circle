@@ -126,7 +126,6 @@ const ChatBox = () => {
     };
   }, [socket, dispatch, messages, currentUser, messagesLoaded]);
 
-  // Mark messages as seen
   useEffect(() => {
     if (!socket || !chatUser) return;
     const unseenMessages = messages.filter(
