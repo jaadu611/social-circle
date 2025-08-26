@@ -181,7 +181,7 @@ const Connections = () => {
                   {currentTab === "Following" && (
                     <button
                       onClick={() => handleUnfollow(user._id)}
-                      className="flex-1 px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-xs font-medium sm:font-semibold rounded-md sm:rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 shadow transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-0.5 sm:gap-1"
+                      className="flex-1 px-2.5 py-1 text-[10px] sm:px-3 sm:py-2 sm:text-xs font-medium sm:font-semibold rounded-md sm:rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 shadow transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-0.5 sm:gap-1"
                     >
                       <UserXIcon className="h-3 w-3 sm:h-4 sm:w-4" /> Unfollow
                     </button>
@@ -199,7 +199,7 @@ const Connections = () => {
                   {currentTab === "Connections" && (
                     <button
                       onClick={() => navigate(`/messages/${user._id}`)}
-                      className="flex-1 px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-xs font-medium sm:font-semibold rounded-md sm:rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 shadow transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-0.5 sm:gap-1"
+                      className="flex-1 px-2.5 py-1 text-[10px] sm:px-3 sm:py-2 sm:text-xs font-medium sm:font-semibold rounded-md sm:rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 shadow transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-0.5 sm:gap-1"
                     >
                       <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />{" "}
                       Message

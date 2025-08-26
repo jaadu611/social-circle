@@ -157,7 +157,7 @@ const Profile = () => {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`relative px-6 py-3 rounded-xl font-medium text-sm transition-all duration-300 ease-out ${
+                    className={`relative cursor-pointer px-6 py-3 rounded-xl font-medium text-sm transition-all duration-300 ease-out ${
                       activeTab === tab
                         ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg transform scale-105"
                         : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
