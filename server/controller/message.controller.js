@@ -55,6 +55,7 @@ export const sendMessage = async (req, res) => {
       const uploadResponse = await imagekit.upload({
         file: req.file.buffer, // Buffer from multer
         fileName: req.file.originalname,
+        folder: "social circle chats"
       });
       media_url = uploadResponse.url;
     }

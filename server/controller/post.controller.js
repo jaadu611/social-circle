@@ -26,7 +26,7 @@ export const addPost = async (req, res) => {
           const response = await imagekit.upload({
             file: image.buffer,
             fileName: image.originalname,
-            folder: "Posts",
+            folder: "Social circle posts",
           });
 
           const filePath = response.filePath || response.path;
