@@ -1,6 +1,6 @@
 import React from "react";
 
-const Loading = ({ height = "100vh" }) => (
+const Loading = ({ height = "100dvh" }) => (
   <div
     style={{ height }}
     className="flex items-center justify-center"

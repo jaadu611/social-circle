@@ -54,14 +54,14 @@ const Messages = () => {
           <div className="flex flex-col gap-2 w-full">
             <button
               onClick={() => navigate(`/messages/${user._id}`)}
-              className="flex items-center justify-center gap-2 py-2 rounded-lg bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white transition duration-200"
+              className="flex cursor-pointer items-center justify-center gap-2 py-2 rounded-lg bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white transition duration-200"
             >
               <MessageSquare className="w-4 h-4" />
               <span className="text-sm font-medium">Message</span>
             </button>
             <button
               onClick={() => navigate(`/profile/${user._id}`)}
-              className="flex items-center justify-center gap-2 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-600 hover:text-white transition duration-200"
+              className="flex cursor-pointer items-center justify-center gap-2 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-600 hover:text-white transition duration-200"
             >
               <Eye className="w-4 h-4" />
               <span className="text-sm font-medium">View Profile</span>

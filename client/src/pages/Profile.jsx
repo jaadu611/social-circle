@@ -110,7 +110,7 @@ const Profile = () => {
   if (!user) return <Loading />;
 
   return (
-    <div className="h-[100dvh] bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="h-[100dvh]">
       {/* Hero Section with Cover Photo */}
       <div className="relative w-full">
         {/* Cover Photo Container */}

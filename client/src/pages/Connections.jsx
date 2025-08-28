@@ -13,6 +13,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { fetchConnections } from "../features/connectionSlice";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import Loading from "../components/Loading";
 
 const Connections = () => {
   const [currentTab, setCurrentTab] = useState("Followers");
@@ -86,9 +87,7 @@ const Connections = () => {
 
   if (!loaded)
     return (
-      <div className="flex items-center justify-center h-[100dvh]">
-        Loading...
-      </div>
+      <Loading />
     );
 
   return (
