@@ -105,3 +105,11 @@
 .cl-internal-d5pd3d {
   background-color: transparent;
 }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100dvh;
+  overflow-x: hidden;
+  background-color: white;
+}
