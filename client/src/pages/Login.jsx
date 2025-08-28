@@ -9,7 +9,7 @@ const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row relative">
+    <div className="h-[100dvh] flex flex-col md:flex-row relative">
       {/* Background Image */}
       <img
         src={bgImage}

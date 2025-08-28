@@ -56,7 +56,7 @@ const Discover = () => {
   if (!isLoaded) return <Loading height="60vh" />;
 
   return (
-    <div className="h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col">
+    <div className="h-[100dvh] bg-gradient-to-b from-slate-50 to-white flex flex-col">
       <div className="sticky top-0 z-10 border-b border-gray-200 px-4 py-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-4">

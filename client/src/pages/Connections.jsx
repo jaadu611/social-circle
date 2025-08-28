@@ -86,13 +86,13 @@ const Connections = () => {
 
   if (!loaded)
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center h-[100dvh]">
         Loading...
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="h-[100dvh] bg-slate-50">
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
         {/* Header */}
         <div className="mb-10 text-center px-4 sm:px-6">

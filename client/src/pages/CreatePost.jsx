@@ -67,7 +67,7 @@ const CreatePost = () => {
   if (!isLoaded || !user) return <Loading />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-slate-100 py-10 px-4">
+    <div className="h-[100dvh] bg-gradient-to-br from-white to-slate-100 py-10 px-4">
       <div className="max-w-[100vw] mx-auto bg-white rounded-xl shadow-lg p-6 space-y-5">
         {/* User info */}
         <div className="flex items-center gap-3">

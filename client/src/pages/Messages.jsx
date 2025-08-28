@@ -73,7 +73,7 @@ const Messages = () => {
   );
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white">
+    <div className="h-[100dvh] flex flex-col bg-gradient-to-br from-slate-50 to-white">
       {/* Header */}
       <div className="shrink-0 px-4 py-6 sm:px-6 lg:px-8 text-center z-10 border-b border-gray-200">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mb-1">

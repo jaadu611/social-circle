@@ -38,14 +38,14 @@ const PostPage = () => {
 
   if (loading)
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-[100dvh]">
         <Loading />
       </div>
     );
 
   if (!post)
     return (
-      <div className="flex flex-col items-center justify-center h-screen text-center px-4">
+      <div className="flex flex-col items-center justify-center h-[100dvh] text-center px-4">
         <p className="text-gray-500 text-lg sm:text-xl mb-4">Post not found</p>
         <button
           onClick={() => navigate(-1)}
@@ -57,7 +57,7 @@ const PostPage = () => {
     );
 
   return (
-    <div className="flex flex-col h-screen mx-auto p-4">
+    <div className="flex flex-col h-[100dvh] mx-auto p-4">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <button

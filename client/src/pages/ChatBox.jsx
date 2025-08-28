@@ -155,7 +155,7 @@ const ChatBox = () => {
   if (!isLoaded || !currentUser || !chatUser) return <Loading />;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-[100dvh] bg-gray-50">
       {/* Header */}
       <div className="flex items-center gap-4 px-5 py-4 bg-white border-b border-gray-300 sticky top-0 z-10">
         <img

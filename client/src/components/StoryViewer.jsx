@@ -79,7 +79,7 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
 
   return (
     <div
-      className="fixed inset-0 h-screen z-[110] flex items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-[110] flex items-center justify-center overflow-hidden"
       style={{ backgroundColor: viewStory.background_color }}
     >
       {/* Progress bar for non-video */}

@@ -25,7 +25,7 @@ const Layout = () => {
   if (!user) return <Loading />;
 
   return (
-    <div className="w-full h-screen flex relative">
+    <div className="w-full flex relative h-[100dvh]">
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
