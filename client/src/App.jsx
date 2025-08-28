@@ -66,12 +66,6 @@ const App = () => {
 
     getToken().then((token) => {
       dispatch(fetchUser(token));
-
-      setTimeout(() => {
-        import("./features/connectionSlice").then(({ fetchConnections }) => {
-          dispatch(fetchConnections(token));
-        });
-      }, 0);
     });
   }, [user, getToken, dispatch]);
 
