@@ -5,6 +5,7 @@ import React, {
   useMemo,
   Suspense,
   lazy,
+  useState,
 } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useUser, useAuth } from "@clerk/clerk-react";
@@ -37,6 +38,15 @@ const App = () => {
 
   const socketRef = useRef(null);
 
+  // Dynamic viewport height state
+  const [appHeight, setAppHeight] = useState(window.innerHeight);
+
+  useEffect(() => {
+    const handleResize = () => setAppHeight(window.innerHeight);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   useEffect(() => {
     if (!user || socketRef.current) return;
 
@@ -57,7 +67,6 @@ const App = () => {
     getToken().then((token) => {
       dispatch(fetchUser(token));
 
-      // Lazy-load connections
       setTimeout(() => {
         import("./features/connectionSlice").then(({ fetchConnections }) => {
           dispatch(fetchConnections(token));
@@ -73,28 +82,37 @@ const App = () => {
   }
 
   if (!user) {
-    return <Login />;
+    return (
+      <div style={{ height: appHeight }}>
+        <Login />
+      </div>
+    );
   }
 
   return (
-    <SocketContext.Provider value={socketValue}>
-      <Toaster />
-      <Suspense fallback={<Loading />}>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Feed />} />
-            <Route path="messages" element={<Messages />} />
-            <Route path="messages/:userId" element={<ChatBox user={user} />} />
-            <Route path="connections" element={<Connections />} />
-            <Route path="discover" element={<Discover />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="profile/:profileId" element={<Profile />} />
-            <Route path="Create-post" element={<CreatePost />} />
-            <Route path="post/:postId" element={<PostPage />} />
-          </Route>
-        </Routes>
-      </Suspense>
-    </SocketContext.Provider>
+    <div style={{ height: appHeight }}>
+      <SocketContext.Provider value={socketValue}>
+        <Toaster />
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Feed />} />
+              <Route path="messages" element={<Messages />} />
+              <Route
+                path="messages/:userId"
+                element={<ChatBox user={user} />}
+              />
+              <Route path="connections" element={<Connections />} />
+              <Route path="discover" element={<Discover />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="profile/:profileId" element={<Profile />} />
+              <Route path="Create-post" element={<CreatePost />} />
+              <Route path="post/:postId" element={<PostPage />} />
+            </Route>
+          </Routes>
+        </Suspense>
+      </SocketContext.Provider>
+    </div>
   );
 };
 
